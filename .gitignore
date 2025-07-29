@@ -1,0 +1,42 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# VSCode settings (optional)
+.vscode/
+
+# Build output (if using TypeScript or bundlers like esbuild)
+dist/
+build/
+
+# Coverage reports
+coverage/
+
+# Local development
+*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Optional: lockfiles (only ignore if using a different package manager)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+
+examples
