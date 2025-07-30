@@ -1,0 +1,14 @@
+{
+  "name": "backend-kit-oauth",
+  "version": "1.0.0",
+  "main": "install.js",
+  "type": "module",
+  "files": [
+    "install.js",
+    "utils/",
+    "templates/"
+  ],
+  "bin": {
+    "backend-kit-oauth": "install.js"
+  }
+}

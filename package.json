@@ -1,13 +1,23 @@
 {
-  "name": "backend-kit",
-  "version": "1.0.1",
-  "description": "",
+  "name": "backend-kit-cli-v2",
+  "version": "1.0.3",
+  "description": "CLI tool to scaffold backend features like OAuth",
   "main": "index.js",
+  "type": "module",
+  "bin": {
+    "backend-kit": "./bin/backend-kit.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "backend",
+    "oauth",
+    "cli",
+    "express",
+    "generator"
+  ],
+  "author": "huzfm",
   "license": "ISC",
   "dependencies": {
     "commander": "^14.0.0",
@@ -20,9 +30,5 @@
     "inquirer": "^12.9.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
-  },
-  "bin": {
-    "backend-kit": "./bin/backend-kit.js"
-  },
-  "type": "module"
+  }
 }

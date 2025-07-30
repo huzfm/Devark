@@ -28,26 +28,31 @@ export async function ensureAppJsHasOAuthSetup(appJsPath) {
       }
 
       let content = fs.readFileSync(appJsPath, 'utf-8')
+      let lines = content.split('\n')
       let updated = false
 
-      // Insert imports at the top (after first import if exists)
-      const lines = content.split('\n')
+      // 1. Insert imports at the top (after the first import or at the top)
       const firstImportIndex = lines.findIndex(line => line.startsWith('import'))
       for (const imp of requiredImports.reverse()) {
-            if (!content.includes(imp)) {
+            if (!lines.some(line => line.trim() === imp)) {
                   lines.splice(firstImportIndex >= 0 ? firstImportIndex : 0, 0, imp)
                   updated = true
             }
       }
 
-      // Insert middleware after "const app = express()"
-      const appLineIndex = lines.findIndex(line => line.includes('const app = express()'))
-      if (appLineIndex !== -1) {
-            for (const middleware of requiredMiddleware.reverse()) {
-                  if (!content.includes(middleware.split('\n')[0])) {
-                        lines.splice(appLineIndex + 1, 0, middleware)
-                        updated = true
-                  }
+      // 2. Detect the app creation line more flexibly
+      const appLineIndex = lines.findIndex(line =>
+            /(?:const|let|var)\s+app\s*=\s*express\s*\(\)/.test(line)
+      )
+
+      const insertIndex = appLineIndex !== -1 ? appLineIndex + 1 : lines.length - 1
+
+      // 3. Insert middleware after app = express()
+      for (const middleware of requiredMiddleware) {
+            const firstLine = middleware.split('\n')[0].trim()
+            if (!lines.some(line => line.trim().startsWith(firstLine))) {
+                  lines.splice(insertIndex, 0, middleware)
+                  updated = true
             }
       }
 

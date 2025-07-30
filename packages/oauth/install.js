@@ -1,3 +1,6 @@
+
+
+
 // import fs from 'fs'
 // import path from 'path'
 // import ejs from 'ejs'
@@ -9,22 +12,22 @@
 // export async function install(targetPath) {
 //       const templatesPath = path.join(process.cwd(), 'packages', 'oauth', 'templates')
 
-//       // Ask for OAuth credentials
+//       // Step 1: Ask for OAuth credentials
 //       const { clientId, clientSecret } = await inquirer.prompt([
 //             { type: 'input', name: 'clientId', message: 'Enter Google Client ID:' },
 //             { type: 'input', name: 'clientSecret', message: 'Enter Google Client Secret:' },
 //       ])
 
-//       // Create .env if not exists
+//       // Step 2: Create .env file if not exists
 //       const envPath = path.join(targetPath, '.env')
 //       if (!fs.existsSync(envPath)) {
-//             fs.writeFileSync(envPath, `GOOGLE_CLIENT_ID=${clientId}\nGOOGLE_CLIENT_SECRET=${clientSecret}`)
+//             fs.writeFileSync(envPath, `GOOGLE_CLIENT_ID=${clientId}\nGOOGLE_CLIENT_SECRET=${clientSecret}\n`)
 //             console.log('✅ .env created')
 //       } else {
 //             console.log('⚠️ .env already exists. Skipped.')
 //       }
 
-//       // Template files to copy
+//       // Step 3: Render and write template files
 //       const filesToGenerate = [
 //             { template: 'authRoutes.ejs', output: 'routes/authRoutes.js' },
 //             { template: 'passport.ejs', output: 'config/passport.js' },
@@ -44,46 +47,55 @@
 //             console.log(`✅ Created ${file.output}`)
 //       }
 
-//       // app.js setup
+//       // Step 4: Handle app.js
 //       const appJsPath = path.join(targetPath, 'app.js')
 //       if (fs.existsSync(appJsPath)) {
-//             if (fs.lstatSync(appJsPath).isFile()) {
-//                   console.log('⚙️  app.js found, injecting required lines...')
-//                   await ensureAppJsHasOAuthSetup(appJsPath)
-//             } else {
-//                   throw new Error(`❌ Expected file at ${appJsPath}, but found a directory.`)
-//             }
+//             console.log('⚙️  app.js found, injecting required lines...')
+//             await ensureAppJsHasOAuthSetup(appJsPath)
 //       } else {
 //             console.log('❌ app.js not found. Creating new app.js...')
 //             await createFullAppJs(targetPath)
 //       }
 
-//       // Create package.json if not exists
+//       // Step 5: Handle package.json
 //       const pkgPath = path.join(targetPath, 'package.json')
-//       if (!fs.existsSync(pkgPath)) {
-//             fs.writeFileSync(pkgPath, JSON.stringify({
+//       let pkg = {}
+
+//       if (fs.existsSync(pkgPath)) {
+//             console.log('📄 package.json found. Updating scripts...')
+//             pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+//       } else {
+//             console.log('🆕 No package.json found. Creating a new one...')
+//             pkg = {
 //                   name: 'oauth-app',
 //                   version: '1.0.0',
-//                   scripts: {
-//                         start: 'node app.js'
-//                   }
-//             }, null, 2))
-//             console.log('✅ Created package.json')
-//       } else {
-//             // Ensure "start" script exists
-//             const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
-//             pkg.scripts = pkg.scripts || {}
-//             if (!pkg.scripts.start) {
-//                   pkg.scripts.start = 'node app.js'
-//                   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
-//                   console.log('✅ Added "start" script to package.json')
+//                   type: 'module',
+//                   scripts: {}
 //             }
 //       }
 
-//       // Install dependencies
+//       // Add scripts if missing
+//       pkg.scripts = pkg.scripts || {}
+
+//       if (!pkg.scripts.start) {
+//             pkg.scripts.start = 'node app.js'
+//             console.log('✅ Added "start" script')
+//       }
+
+//       if (!pkg.scripts.dev) {
+//             pkg.scripts.dev = 'nodemon app.js'
+//             console.log('✅ Added "dev" script')
+//       }
+
+//       // Write back package.json
+//       fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
+//       console.log('✅ package.json updated')
+
+//       // Step 6: Install dependencies
 //       console.log('📦 Installing required dependencies...\n')
 //       try {
 //             execSync(`pnpm add express express-session passport passport-google-oauth20 dotenv`, { cwd: targetPath, stdio: 'inherit' })
+//             execSync(`pnpm add -D nodemon`, { cwd: targetPath, stdio: 'inherit' })
 //             console.log('✅ Dependencies installed successfully.')
 //       } catch (err) {
 //             console.error('❌ Failed to install dependencies:', err)
@@ -91,16 +103,23 @@
 // }
 
 
+
 import fs from 'fs'
 import path from 'path'
 import ejs from 'ejs'
 import inquirer from 'inquirer'
 import { execSync } from 'child_process'
+import { fileURLToPath } from 'url'
 import { ensureAppJsHasOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js'
 import { createFullAppJs } from './utils/createFullAppJs.js'
 
+// For __dirname support in ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 export async function install(targetPath) {
-      const templatesPath = path.join(process.cwd(), 'packages', 'oauth', 'templates')
+      // ✅ Use module-safe path resolution
+      const templatesPath = path.join(__dirname, 'templates')
 
       // Step 1: Ask for OAuth credentials
       const { clientId, clientSecret } = await inquirer.prompt([
@@ -160,11 +179,10 @@ export async function install(targetPath) {
                   name: 'oauth-app',
                   version: '1.0.0',
                   type: 'module',
-                  scripts: {}
+                  scripts: {},
             }
       }
 
-      // Add scripts if missing
       pkg.scripts = pkg.scripts || {}
 
       if (!pkg.scripts.start) {
@@ -177,7 +195,6 @@ export async function install(targetPath) {
             console.log('✅ Added "dev" script')
       }
 
-      // Write back package.json
       fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
       console.log('✅ package.json updated')
 
