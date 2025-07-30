@@ -1,12 +1,38 @@
-import installOAuth from '../../packages/oauth/install.js'
+import inquirer from 'inquirer'
+import fs from 'fs'
+import path from 'path'
+import { install } from '../../packages/oauth/install.js'
 
-export default async function add(feature) {
-      const cwd = process.cwd() + '/examples/my-app'
+export async function add() {
+      const examplesPath = path.join(process.cwd(), 'examples')
 
-      if (feature === 'oauth') {
-            await installOAuth(cwd)
-      } else {
-            console.log('❌ Unsupported feature:', feature)
-            console.log("and if you think that this feature should me add please conatact huzfm@proton.me")
+      if (!fs.existsSync(examplesPath)) {
+            console.error('❌ No examples/ folder found.')
+            return
       }
+
+      const projectFolders = fs
+            .readdirSync(examplesPath, { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name)
+
+      if (projectFolders.length === 0) {
+            console.error('❌ No projects found inside examples/.')
+            return
+      }
+
+      // 🔽 Prompt user to choose project
+      const { selectedProject } = await inquirer.prompt([
+            {
+                  type: 'list',
+                  name: 'selectedProject',
+                  message: 'Select the project to install OAuth:',
+                  choices: projectFolders,
+            },
+      ])
+
+      const targetPath = path.join(examplesPath, selectedProject)
+
+      // 🔽 Call the OAuth installer
+      await install(targetPath)
 }

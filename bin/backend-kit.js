@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
-import init from '../cli/commands/init.js'
-import add from '../cli/commands/add.js'
+import { add } from '../cli/commands/add.js'
+
 
 const program = new Command()
 
 program
-      .command('init')
-      .description('Initialize an Express backend')
-      .action(init)
+      .command('add <template>')
+      .description('Add a backend module')
+      .action(async (template) => {
+            if (template === 'oauth') {
+                  await add()
+            } else {
+                  console.log(`❌ Template "${template}" not supported yet.`)
+            }
+      })
 
-program
-      .command('add <feature>')
-      .description('Add a feature like oauth')
-      .action(add)
-
-program.parse()
+program.parse(process.argv)
