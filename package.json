@@ -1,6 +1,6 @@
 {
   "name": "backend-kit-cli-v2",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "CLI tool to scaffold backend features like OAuth",
   "main": "index.js",
   "type": "module",
