@@ -1,96 +1,80 @@
 import fs from 'fs'
 import path from 'path'
 import ejs from 'ejs'
+import { fileURLToPath } from 'url'
 import inquirer from 'inquirer'
 import { execSync } from 'child_process'
 import { ensureAppJsHasOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js'
 import { createFullAppJs } from './utils/createFullAppJs.js'
 
-export async function install(targetPath, entryFile) {
+// Get __dirname from import.meta.url
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+export async function install(targetPath) {
       targetPath = path.resolve(targetPath)
-      const templatesPath = path.join(process.cwd(), 'packages', 'oauth', 'templates')
-      const pkgPath = path.join(targetPath, 'package.json')
+
+      // Prompt for entry file
+      const { entryFile } = await inquirer.prompt([
+            {
+                  type: 'input',
+                  name: 'entryFile',
+                  message: 'Enter your entry file (e.g., app.js, server.js):',
+                  default: 'app.js',
+            }
+      ])
+
       const entryFilePath = path.join(targetPath, entryFile)
+      const fileExists = fs.existsSync(entryFilePath)
 
-      if (!fs.existsSync(pkgPath)) {
-            console.error('❌ No package.json found.')
-            return
-      }
-
-      // ✅ If entry file doesn't exist, create it first
-      if (!fs.existsSync(entryFilePath)) {
-            console.warn(`⚠️ Entry file "${entryFile}" not found. Creating full OAuth app.`)
-            createFullAppJs(targetPath, entryFile) // pass entryFile here!
-      }
-
-      const { clientId, clientSecret } = await inquirer.prompt([
-            { type: 'input', name: 'clientId', message: 'Enter Google Client ID:' },
+      // Prompt for credentials
+      const { clientID, clientSecret } = await inquirer.prompt([
+            { type: 'input', name: 'clientID', message: 'Enter Google Client ID:' },
             { type: 'input', name: 'clientSecret', message: 'Enter Google Client Secret:' },
       ])
 
-      // ✅ .env setup
+      // Write .env file
       const envPath = path.join(targetPath, '.env')
-      if (!fs.existsSync(envPath)) {
-            fs.writeFileSync(envPath, `GOOGLE_CLIENT_ID=${clientId}\nGOOGLE_CLIENT_SECRET=${clientSecret}\n`)
-            console.log('✅ .env created')
+      fs.writeFileSync(envPath, `GOOGLE_CLIENT_ID=${clientID}\nGOOGLE_CLIENT_SECRET=${clientSecret}\n`, 'utf-8')
+      console.log('✅ .env created')
+
+      // Use correct template path
+      const authRoutesTemplatePath = path.join(__dirname, 'templates', 'authRoutes.ejs')
+      const passportConfigTemplatePath = path.join(__dirname, 'templates', 'passport.ejs')
+
+      const routesDir = path.join(targetPath, 'routes')
+      const configDir = path.join(targetPath, 'config')
+      fs.mkdirSync(routesDir, { recursive: true })
+      fs.mkdirSync(configDir, { recursive: true })
+
+      // Render and write route and config files
+      const authRoutes = ejs.render(fs.readFileSync(authRoutesTemplatePath, 'utf-8'))
+      const passportConfig = ejs.render(fs.readFileSync(passportConfigTemplatePath, 'utf-8'))
+
+      fs.writeFileSync(path.join(routesDir, 'authRoutes.js'), authRoutes, 'utf-8')
+      fs.writeFileSync(path.join(configDir, 'passport.js'), passportConfig, 'utf-8')
+      console.log('✅ OAuth route and passport config created')
+
+      // Insert into app.js or create it
+      if (fileExists) {
+            await ensureAppJsHasOAuthSetup(entryFilePath)
       } else {
-            console.log('⚠️ .env already exists. Skipped.')
+            createFullAppJs(targetPath, entryFile) // pass filename explicitly
       }
 
-      // ✅ Template injection
-      const filesToGenerate = [
-            { template: 'authRoutes.ejs', output: 'routes/authRoutes.js' },
-            { template: 'passport.ejs', output: 'config/passport.js' },
-      ]
+      // Dependencies
+      const dependencies = ['express', 'passport', 'passport-google-oauth20', 'dotenv', 'express-session']
+      execSync(`pnpm add ${dependencies.join(' ')}`, { cwd: targetPath, stdio: 'inherit' })
 
-      for (const file of filesToGenerate) {
-            const templatePath = path.join(templatesPath, file.template)
-            const outputPath = path.join(targetPath, file.output)
-
-            const rendered = ejs.render(fs.readFileSync(templatePath, 'utf-8'), {
-                  clientId,
-                  clientSecret,
-            })
-
-            fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-            fs.writeFileSync(outputPath, rendered)
-            console.log(`✅ Created ${file.output}`)
+      // Add dev script to package.json
+      const packageJsonPath = path.join(targetPath, 'package.json')
+      if (fs.existsSync(packageJsonPath)) {
+            const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+            pkg.scripts = pkg.scripts || {}
+            pkg.scripts.start = pkg.scripts.start || `node ${entryFile}`
+            fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2), 'utf-8')
+            console.log('✅ Added "start" script to package.json')
       }
 
-      // ✅ Insert OAuth into the specified entry file
-      console.log(`⚙️ Updating ${entryFile} with OAuth setup...`)
-      await ensureAppJsHasOAuthSetup(entryFilePath)
-
-      // ✅ Scripts
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
-      pkg.scripts = pkg.scripts || {}
-
-      if (!pkg.scripts.start) {
-            pkg.scripts.start = `node ${entryFile}`
-            console.log('✅ Added "start" script')
-      }
-
-      if (!pkg.scripts.dev) {
-            pkg.scripts.dev = `nodemon ${entryFile}`
-            console.log('✅ Added "dev" script')
-      }
-
-      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
-      console.log('✅ package.json updated')
-
-      // ✅ Dependencies
-      console.log('📦 Installing dependencies...')
-      try {
-            execSync(`pnpm add express express-session passport passport-google-oauth20 dotenv`, {
-                  cwd: targetPath,
-                  stdio: 'inherit',
-            })
-            execSync(`pnpm add -D nodemon`, {
-                  cwd: targetPath,
-                  stdio: 'inherit',
-            })
-            console.log('✅ Dependencies installed.')
-      } catch (err) {
-            console.error('❌ Dependency installation failed:', err)
-      }
+      console.log('✅ OAuth module installed successfully 🚀')
 }

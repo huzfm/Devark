@@ -20,6 +20,7 @@
   "author": "huzfm",
   "license": "ISC",
   "dependencies": {
+    "backend-kit-cli-v2": "^3.0.0",
     "commander": "^14.0.0",
     "dotenv": "^17.2.1",
     "ejs": "^3.1.10",
