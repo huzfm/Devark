@@ -6,7 +6,7 @@ const requiredImports = [
       `import session from 'express-session'`,
       `import passport from 'passport'`,
       `import authRoutes from './routes/authRoutes.js'`,
-      `import './config/passport.js'`
+      `import './config/passport.js'`,
 ]
 
 const sessionMiddleware = `app.use(session({
@@ -19,7 +19,7 @@ const requiredMiddleware = [
       sessionMiddleware,
       `app.use(passport.initialize())`,
       `app.use(passport.session())`,
-      `app.use(authRoutes)`
+      `app.use(authRoutes)`,
 ]
 
 export async function ensureAppJsHasOAuthSetup(appJsPath) {
@@ -31,35 +31,33 @@ export async function ensureAppJsHasOAuthSetup(appJsPath) {
       let lines = content.split('\n')
       let updated = false
 
-      // 1. Insert imports at the top (after the first import or at the top)
-      const firstImportIndex = lines.findIndex(line => line.startsWith('import'))
-      for (const imp of requiredImports.reverse()) {
-            if (!lines.some(line => line.trim() === imp)) {
-                  lines.splice(firstImportIndex >= 0 ? firstImportIndex : 0, 0, imp)
-                  updated = true
-            }
-      }
+      // Remove existing required imports (to reinsert them at top cleanly)
+      lines = lines.filter(line => !requiredImports.includes(line.trim()))
 
-      // 2. Detect the app creation line more flexibly
+      // Insert all required imports at the very top in defined order
+      lines = [...requiredImports, '', ...lines]
+      updated = true
+
+      // Ensure app = express() exists
       const appLineIndex = lines.findIndex(line =>
             /(?:const|let|var)\s+app\s*=\s*express\s*\(\)/.test(line)
       )
 
-      const insertIndex = appLineIndex !== -1 ? appLineIndex + 1 : lines.length - 1
-
-      // 3. Insert middleware after app = express()
-      for (const middleware of requiredMiddleware) {
-            const firstLine = middleware.split('\n')[0].trim()
-            if (!lines.some(line => line.trim().startsWith(firstLine))) {
-                  lines.splice(insertIndex, 0, middleware)
-                  updated = true
-            }
+      if (appLineIndex === -1) {
+            lines.push('', 'const app = express()')
       }
 
-      if (updated) {
-            fs.writeFileSync(appJsPath, lines.join('\n'), 'utf-8')
-            console.log('✅ Inserted missing OAuth code into app.js')
-      } else {
-            console.log('✅ app.js already contains OAuth setup.')
-      }
+      const finalAppLineIndex = lines.findIndex(line =>
+            /(?:const|let|var)\s+app\s*=\s*express\s*\(\)/.test(line)
+      )
+
+      // Remove old middleware lines (to reinsert in correct order)
+      const middlewareKeywords = ['app.use(session(', 'app.use(passport.initialize()', 'app.use(passport.session()', 'app.use(authRoutes']
+      lines = lines.filter(line => !middlewareKeywords.some(keyword => line.trim().startsWith(keyword)))
+
+      // Insert all middlewares in correct order after app = express()
+      lines.splice(finalAppLineIndex + 1, 0, ...requiredMiddleware)
+
+      fs.writeFileSync(appJsPath, lines.join('\n'), 'utf-8')
+      console.log('✅ OAuth imports + middleware inserted at top and in correct order.')
 }

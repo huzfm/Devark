@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      backend-kit-cli-v2:
+        specifier: ^3.0.0
+        version: 3.0.0
       commander:
         specifier: ^14.0.0
         version: 14.0.0
@@ -187,6 +190,10 @@ packages:
 
   async@3.2.6:
     resolution: {integrity: sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==}
+
+  backend-kit-cli-v2@3.0.0:
+    resolution: {integrity: sha512-ydL3I2wOuRvJ7gHdqU4oP3hqKKaDwedLLPa15+jRn+rBX/EOgIaG+sw0hCUtasO1/4+cpFqGKJP4PjtbV8EOWQ==}
+    hasBin: true
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -851,6 +858,22 @@ snapshots:
       color-convert: 2.0.1
 
   async@3.2.6: {}
+
+  backend-kit-cli-v2@3.0.0:
+    dependencies:
+      commander: 14.0.0
+      dotenv: 17.2.1
+      ejs: 3.1.10
+      execa: 9.6.0
+      express: 5.1.0
+      express-session: 1.18.2
+      fs-extra: 11.3.0
+      inquirer: 12.9.0
+      passport: 0.7.0
+      passport-google-oauth20: 2.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - supports-color
 
   balanced-match@1.0.2: {}
 
