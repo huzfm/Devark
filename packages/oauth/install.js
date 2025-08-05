@@ -59,7 +59,8 @@ export async function install(targetPath) {
       if (fileExists) {
             await ensureAppJsHasOAuthSetup(entryFilePath)
       } else {
-            createFullAppJs(targetPath, entryFile) // pass filename explicitly
+            console.log("No Project found")
+            //createFullAppJs(targetPath, entryFile) // pass filename explicitly
       }
 
       // Dependencies
