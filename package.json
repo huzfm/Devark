@@ -1,5 +1,5 @@
 {
-  "name": "backend-kit-cli-v2",
+  "name": "devark",
   "version": "6.3.0",
   "description": "CLI tool to scaffold backend features like OAuth",
   "main": "index.js",
@@ -38,10 +38,10 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/huzfm/Backend-kit.git"
+    "url": "git+https://github.com/huzfm/Devark.git"
   },
   "bugs": {
-    "url": "https://github.com/huzfm/Backend-kit/issues"
+    "url": "https://github.com/huzfm/Devark/issues"
   },
-  "homepage": "https://github.com/huzfm/Backend-kit#readme"
+  "homepage": "https://github.com/huzfm/Devark#readme"
 }

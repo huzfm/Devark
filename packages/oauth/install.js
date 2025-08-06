@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url'
 import inquirer from 'inquirer'
 import { execSync } from 'child_process'
 import { ensureAppJsHasOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js'
-import { createFullAppJs } from './utils/createFullAppJs.js'
 
 // Get __dirname from import.meta.url
 const __filename = fileURLToPath(import.meta.url)
