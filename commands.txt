@@ -1,5 +1,0 @@
-chmod +x cli/bin/backend-kit.ts  //setting the project executable
-
-
-GOOGLE_CLIENT_ID=834328100693-f58lr5tcr9em4ijm2kvc0ebmuseq6oi6.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
