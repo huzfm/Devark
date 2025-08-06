@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "backend-kit": "./bin/backend-kit.js"
+    "backend-kit": "bin/backend-kit.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -31,5 +31,17 @@
     "inquirer": "^12.9.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huzfm/Backend-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/huzfm/Backend-kit/issues"
+  },
+  "homepage": "https://github.com/huzfm/Backend-kit#readme"
 }
