@@ -8,9 +8,6 @@ import inquirer from 'inquirer'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-
-
-
 function detectPackageManager(targetPath) {
       if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) return 'pnpm'
       if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) return 'yarn'
@@ -43,52 +40,47 @@ function injectEnvVarsInline(vars = {}, targetPath) {
       console.log('✅ Environment variables updated in .env')
 }
 
-function injectRouteAndJsonMiddleware(targetPath) {
-      const appJsPath = path.join(targetPath, 'app.js')
-      if (!fs.existsSync(appJsPath)) {
-            console.warn('⚠️ app.js not found. Skipping route injection.')
+function injectRouteAndJsonMiddleware(targetPath, entryFile) {
+      const entryPath = path.join(targetPath, entryFile)
+      if (!fs.existsSync(entryPath)) {
+            console.warn(`⚠️ ${entryFile} not found. Skipping route injection.`)
             return
       }
 
-      let appContent = fs.readFileSync(appJsPath, 'utf-8')
+      let appContent = fs.readFileSync(entryPath, 'utf-8')
       let modified = false
 
-      // Inject express import
       if (!appContent.includes(`import express`)) {
             appContent = `import express from 'express'\n` + appContent
             modified = true
       }
 
-      // Inject express.json() middleware
       if (!appContent.includes('app.use(express.json())')) {
             const appInitIndex = appContent.indexOf('const app =') || appContent.indexOf('const app=')
             if (appInitIndex !== -1) {
                   const insertIndex = appContent.indexOf('\n', appInitIndex) + 1
                   appContent = appContent.slice(0, insertIndex) + `app.use(express.json());\n` + appContent.slice(insertIndex)
-                  console.log('✅ app.use(express.json()) injected in app.js')
+                  console.log('✅ app.use(express.json()) injected')
                   modified = true
             }
       }
 
-      // Inject route import
       if (!appContent.includes(`./routes/otpRoutes`)) {
             appContent = `import otpRoutes from './routes/otpRoutes.js'\n` + appContent
             modified = true
       }
 
-      // Inject route usage with app.use("/", otpRoutes)
       if (!appContent.includes(`app.use("/", otpRoutes)`)) {
             const useRegex = /app\.use\(.*\)/g
             const lastUse = [...appContent.matchAll(useRegex)].pop()
             const insertPos = lastUse ? lastUse.index + lastUse[0].length : appContent.length
-            appContent =
-                  appContent.slice(0, insertPos) + `\napp.use("/", otpRoutes);` + appContent.slice(insertPos)
-            console.log('✅ Route injected in app.js')
+            appContent = appContent.slice(0, insertPos) + `\napp.use("/", otpRoutes);` + appContent.slice(insertPos)
+            console.log('✅ Route injected')
             modified = true
       }
 
       if (modified) {
-            fs.writeFileSync(appJsPath, appContent, 'utf-8')
+            fs.writeFileSync(entryPath, appContent, 'utf-8')
       }
 }
 
@@ -103,7 +95,13 @@ export default async function install(targetPath = process.cwd()) {
             return
       }
 
-      const { resendApiKey, fromEmail } = await inquirer.prompt([
+      const { entryFile, resendApiKey, fromEmail } = await inquirer.prompt([
+            {
+                  type: 'input',
+                  name: 'entryFile',
+                  message: 'What is the entry file of your project? (e.g., app.js or index.js)',
+                  default: 'app.js',
+            },
             {
                   type: 'input',
                   name: 'resendApiKey',
@@ -137,7 +135,7 @@ export default async function install(targetPath = process.cwd()) {
       fs.writeFileSync(path.join(controllersDir, 'otp-functions.js'), ejs.render(otpFunctionsTemplate), 'utf-8')
       fs.writeFileSync(path.join(routesDir, 'otpRoutes.js'), ejs.render(otpRoutesTemplate), 'utf-8')
 
-      injectRouteAndJsonMiddleware(targetPath)
+      injectRouteAndJsonMiddleware(targetPath, entryFile)
 
       const dependencies = ['express', 'resend', 'dotenv']
       const packageManager = detectPackageManager(targetPath)
@@ -159,7 +157,7 @@ export default async function install(targetPath = process.cwd()) {
 
       const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
       pkg.scripts = pkg.scripts || {}
-      pkg.scripts.start = pkg.scripts.start || `node app.js`
+      pkg.scripts.start = pkg.scripts.start || `node ${entryFile}`
       fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2), 'utf-8')
 
       console.log('✅ Resend based OTP module installed successfully 🚀')
