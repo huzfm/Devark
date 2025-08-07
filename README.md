@@ -2,10 +2,10 @@
 <html lang="en">
 <body>
 
-  <h1>🧰 BackendKit</h1>
-  <p><strong>BackendKit</strong> is a CLI tool that lets developers <strong>scaffold  backend features</strong> with a single command. Think of it like <code>create-react-app</code>, but for backend boilerplate such as OAuth, email, and more.</p>
+  <h1>🧰 Devark</h1>
+  <p><strong>Devark</strong> is a CLI tool that lets developers <strong>scaffold backend features</strong> with a single command. Think of it like <code>create-react-app</code>, but for backend boilerplate such as OAuth, email, and more.</p>
 
-  <blockquote><strong>Example:</strong> <code>backend-kit add oauth</code> will instantly scaffold and configure Google OAuth using Passport, including route setup, middleware, and <code>.env</code> integration.</blockquote>
+  <blockquote><strong>Example:</strong> <code>devark add oauth</code> will instantly scaffold and configure Google OAuth using Passport, including route setup, middleware, and <code>.env</code> integration.</blockquote>
 
   <h2>🚀 Features</h2>
   <ul>
@@ -20,7 +20,7 @@
   <h2>📁 Project Structure</h2>
   <pre><code>.
 ├── bin/                  # CLI entry
-│   └── backend-kit.ts
+│   └── devark.js
 ├── modules/              # Feature modules (OAuth, Email, etc.)
 │   └── oauth/
 │       ├── templates/
@@ -38,8 +38,8 @@
   <h2>🧑‍💻 Getting Started</h2>
 
   <h3>1. 📥 Clone the Repository</h3>
-  <pre><code>git clone https://github.com/your-username/backend-kit.git
-cd backend-kit</code></pre>
+  <pre><code>git clone https://github.com/huzfm/devark.git
+cd devark</code></pre>
 
   <h3>2. 📦 Install Dependencies</h3>
   <pre><code>pnpm install
@@ -50,16 +50,16 @@ npm install</code></pre>
   <pre><code>pnpm link
 # or
 npm link</code></pre>
-  <p>You can now use <code>backend-kit</code> as a global CLI command.</p>
+  <p>You can now use <code>devark</code> as a global CLI command.</p>
 
   <h3>4. 🔐 Make the CLI Executable (for UNIX)</h3>
-  <p>If your CLI entry is in <code>bin/backend-kit.ts</code>, make it executable:</p>
-  <pre><code>chmod +x cli/bin/backend-kit.js</code></pre>
+  <p>If your CLI entry is in <code>bin/devark.ts</code>, make it executable:</p>
+  <pre><code>chmod +x cli/bin/devark.js</code></pre>
 
   <h2>⚙️ Usage</h2>
 
   <h3>✅ Add OAuth Setup</h3>
-  <pre><code>backend-kit add oauth</code></pre>
+  <pre><code>devark add oauth</code></pre>
   <p>This command will:</p>
   <ul>
     <li>Add Passport and session setup to <code>app.js</code></li>
