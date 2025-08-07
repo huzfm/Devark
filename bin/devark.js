@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import install from '../packages/oauth/install.js';
+import addOAuth from '../packages/oauth/install.js';
 import addOtp from '../packages/otp/install.js';
 // import more feature modules as needed
 
