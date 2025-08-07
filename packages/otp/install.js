@@ -157,5 +157,5 @@ export default async function install(targetPath = process.cwd()) {
       pkg.scripts.start = pkg.scripts.start || `node app.js`
       fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2), 'utf-8')
 
-      console.log('✅ OTP module (controllers/routes) installed successfully 🚀')
+      console.log('✅ Resend based OTP module installed successfully 🚀')
 }
