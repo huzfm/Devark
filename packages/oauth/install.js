@@ -10,6 +10,9 @@ import { ensureAppJsHasOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+
+
+
 function detectPackageManager(targetPath) {
       if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) return 'pnpm'
       if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) return 'yarn'
@@ -19,6 +22,7 @@ function detectPackageManager(targetPath) {
 
 export default async function install(targetPath = process.cwd()) {
       targetPath = path.resolve(targetPath)
+      console.log("\x1b[32m\x1b[1mThis adds Google-OAuth module to your project. Please follow the instructions carefully.\x1b[0m");
 
       const packageJsonPath = path.join(targetPath, 'package.json')
       if (!fs.existsSync(packageJsonPath)) {

@@ -8,6 +8,9 @@ import inquirer from 'inquirer'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+
+
+
 function detectPackageManager(targetPath) {
       if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) return 'pnpm'
       if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) return 'yarn'
@@ -90,6 +93,8 @@ function injectRouteAndJsonMiddleware(targetPath) {
 }
 
 export default async function install(targetPath = process.cwd()) {
+      console.log("\x1b[32m\x1b[1mThis adds Resend-based OTP module to your project. Please follow the instructions carefully.\x1b[0m");
+
       targetPath = path.resolve(targetPath)
 
       const packageJsonPath = path.join(targetPath, 'package.json')
