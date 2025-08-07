@@ -39,4 +39,4 @@ coverage/
 # pnpm-lock.yaml
 
 
-examples
+test
