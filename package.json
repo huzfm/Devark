@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "backend-kit": "bin/backend-kit.js"
+    "devark": "bin/devark.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
