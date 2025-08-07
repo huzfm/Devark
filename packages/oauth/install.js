@@ -17,7 +17,7 @@ function detectPackageManager(targetPath) {
       return null
 }
 
-export async function install(targetPath) {
+export default async function install(targetPath) {
       targetPath = path.resolve(targetPath)
 
       const packageJsonPath = path.join(targetPath, 'package.json')
