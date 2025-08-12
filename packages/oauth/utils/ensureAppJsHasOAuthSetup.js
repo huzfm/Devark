@@ -59,5 +59,4 @@ export async function ensureAppJsHasOAuthSetup(appJsPath) {
       lines.splice(finalAppLineIndex + 1, 0, ...requiredMiddleware)
 
       fs.writeFileSync(appJsPath, lines.join('\n'), 'utf-8')
-      console.log('✅ OAuth imports + middleware inserted at top and in correct order.')
 }
