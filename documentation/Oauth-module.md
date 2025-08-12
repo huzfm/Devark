@@ -1,15 +1,11 @@
-# How BackendKit Works (Developer Documentation)
+# How Devark Oauth Works (Developer Documentation)
 
-This document explains how the `BackendKit` CLI works internally.
 
-> Goal: To let developers understand how new features like `add oauth`, `add resend`, `add s3` are built and integrated.
-
----
 
 ## CLI Command Example
 
 ```bash
-npx backend-kit add oauth
+npx devark add oauth
 ```
 
 This command adds the **OAuth module** to the current Node.js project.
@@ -18,14 +14,13 @@ This command adds the **OAuth module** to the current Node.js project.
 
 ## ⚙️ What Happens Behind the Scenes
 
-The CLI runs 5 main steps for every feature module:
+The CLI runs **5 main steps** for every feature module:
 
 ---
 
 ### 1. Validate and Prepare Files
 
 - Checks if essential files exist (`app.js`, `package.json`, `.env`)
-- If not, it **creates default versions** from internal EJS templates
 
 **Uses:**
 
@@ -118,12 +113,10 @@ modules/
       ├── templates/
       │   └── authRoute.ejs
       ├── install.js
-      ├── createFullAppJs.js
       └── ensureAppJsHasOAuthSetup.js
 ```
 
 - `install.js`: Entry point for feature
-- `createFullAppJs.js`: Builds app.js if it doesn’t exist
 - `ensureAppJsHasOAuthSetup.js`: Modifies app.js if it already exists
 
 ---
@@ -131,40 +124,9 @@ modules/
 ## 🔄 CLI Core Workflow
 
 | Step | Purpose                       | Tools Used               |
-| ---- | ----------------------------- | ------------------------ |
+|------|-------------------------------|--------------------------|
 | 1️⃣   | Setup / Validate files        | `fs`, `path`             |
 | 2️⃣   | Patch `app.js` code           | regex, string checks     |
 | 3️⃣   | Install deps                  | `child_process.execSync` |
 | 4️⃣   | Add route/config files        | `fs.copyFileSync`        |
 | 5️⃣   | Update `.env`, `package.json` | string, JSON             |
-
----
-
-## 🛠 How to Add a New Feature Module
-
-1. Create a new folder under `modules/feature-name/`
-2. Add:
-   - `templates/` (for route/config files)
-   - `install.js` (runs the setup)
-   - Utility files like `createFullAppJs.js`
-3. Register the command in the CLI dispatcher (e.g., `cli/bin/backend-kit.ts`)
-
----
-
-## Example Features You Can Add
-
-- `add oauth` – Google login setup via Passport.js
-- `add resend` – Send emails via [Resend](https://resend.com)
-- `add s3` – File uploads to AWS S3
-- `add logging` – Setup with `morgan` or `winston`
-- `add rate-limit` – Basic rate limiter with `express-rate-limit`
-
----
-
-## Requirements
-
-- Node.js v18+
-- Project must have `package.json`
-- `pnpm`, `npm`, should be available globally
-
----
