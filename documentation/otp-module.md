@@ -154,15 +154,6 @@ controllers/
 
 ---
 
-## 🛠 How to Add a New Feature (Devark CLI)
-
-1. Create folder `modules/<feature>/`
-2. Add:
-   - `templates/` (e.g. for routes/controllers)
-   - `install.js` to define the module logic
-3. Register feature in CLI entry file (`bin/devark.js`)
-
----
 
 ## 🌟 Future Ideas for OTP
 
