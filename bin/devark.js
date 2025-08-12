@@ -3,7 +3,8 @@
 import { Command } from 'commander';
 import addOAuth from '../packages/oauth/install.js';
 import addOtp from '../packages/otp/install.js';
-// import more feature modules as needed
+import addGithubOAuth from '../packages/github-oauth/install.js';
+
 
 const program = new Command();
 
@@ -19,11 +20,14 @@ program
             const input = template.toLowerCase().trim();
 
             switch (input) {
-                  case 'oauth':
-                        await addOAuth();
+                  case "oauth":
+                        await addOAuth(process.cwd());
                         break;
-                  case 'otp':
-                        await addOtp();
+                  case "otp":
+                        await addOtp(process.cwd());
+                        break;
+                  case "github-oauth":
+                        await addGithubOAuth(process.cwd());
                         break;
                   // case 'resend':
                   //   await addResend();
