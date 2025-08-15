@@ -1,93 +1,32 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import inquirer from 'inquirer';
-import { execSync } from 'child_process';
+import fs from 'fs'
+import path from 'path'
+import ejs from 'ejs'
+import { fileURLToPath } from 'url'
+import inquirer from 'inquirer'
+import { execSync } from 'child_process'
+import { ensureAppJsHasOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Get __dirname from import.meta.url
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 function detectPackageManager(targetPath) {
-      if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) return 'pnpm';
-      if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) return 'yarn';
-      if (fs.existsSync(path.join(targetPath, 'package-lock.json'))) return 'npm';
-      return null;
+      if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) return 'pnpm'
+      if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) return 'yarn'
+      if (fs.existsSync(path.join(targetPath, 'package-lock.json'))) return 'npm'
+      return null
 }
 
-function injectGitHubOAuth(entryFilePath) {
-      let entryContent = fs.readFileSync(entryFilePath, 'utf-8');
-      const lines = entryContent.split('\n');
+export default async function install(targetPath = process.cwd()) {
+      targetPath = path.resolve(targetPath)
+      console.log("\x1b[32m\x1b[1mThis adds GitHub-OAuth module to your project. Please follow the instructions carefully.\x1b[0m")
 
-      // Find last import line index
-      let lastImportIndex = -1;
-      for (let i = 0; i < lines.length; i++) {
-            if (lines[i].startsWith('import ')) lastImportIndex = i;
-      }
-
-      // Insert import dotenv if missing
-      const hasDotenvImport = lines.some(line => line.includes("import dotenv"));
-      if (!hasDotenvImport) {
-            lines.splice(lastImportIndex + 1, 0, "import dotenv from 'dotenv';");
-            lastImportIndex++;
-      }
-
-      // Insert dotenv.config(); if missing
-      const hasDotenvConfig = lines.some(line => line.includes('dotenv.config()'));
-      if (!hasDotenvConfig) {
-            lines.splice(lastImportIndex + 1, 0, 'dotenv.config();');
-      }
-
-      // Insert other imports if missing
-      const importLines = [
-            `import session from 'express-session';`,
-            `import passport from 'passport';`,
-            `import './config/githubStrategy.js';`,
-            `import githubAuth from './routes/githubAuth.js';`, // Note updated filename 'githubAuth.js'
-      ];
-      importLines.forEach((imp) => {
-            if (!lines.some(line => line.trim() === imp)) {
-                  lines.splice(lastImportIndex + 1, 0, imp);
-                  lastImportIndex++;
-            }
-      });
-
-      // Insert middleware block if missing
-      const middlewareBlock = `
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'default_secret',
-  resave: false,
-  saveUninitialized: false
-}));
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use('/', githubAuth); 
-`.trim();
-
-      if (!entryContent.includes('app.use(session(')) {
-            const appInitIndex = lines.findIndex(line => line.includes('const app'));
-            if (appInitIndex !== -1) {
-                  lines.splice(appInitIndex + 1, 0, middlewareBlock);
-            } else {
-                  lines.push('\n' + middlewareBlock);
-            }
-      }
-
-      fs.writeFileSync(entryFilePath, lines.join('\n'), 'utf-8');
-      console.log(`✅ Ordered imports & middleware added to ${path.basename(entryFilePath)}`);
-}
-
-export default async function installGithubOAuth(targetPath = process.cwd()) {
-      targetPath = path.resolve(targetPath);
-      console.log("\x1b[32m\x1b[1mThis adds GitHub-OAuth module to your project. Please follow the instructions carefully.\x1b[0m");
-
-      const packageJsonPath = path.join(targetPath, 'package.json');
+      const packageJsonPath = path.join(targetPath, 'package.json')
       if (!fs.existsSync(packageJsonPath)) {
-            console.error('❌ No package.json found in the target project. Aborting.');
-            return;
+            console.error('❌ No package.json found in the target project. Aborting.')
+            return
       }
 
-      // Prompt entry file
       const { entryFile } = await inquirer.prompt([
             {
                   type: 'input',
@@ -95,86 +34,78 @@ export default async function installGithubOAuth(targetPath = process.cwd()) {
                   message: 'Enter your entry file (e.g., app.js, server.js):',
                   default: 'app.js',
             },
-      ]);
+      ])
 
-      const entryFilePath = path.join(targetPath, entryFile);
+      const entryFilePath = path.join(targetPath, entryFile)
       if (!fs.existsSync(entryFilePath)) {
-            console.error(`❌ Entry file "${entryFile}" not found in target project. Aborting.`);
-            return;
+            console.error(`❌ Entry file "${entryFile}" not found in target project. Aborting.`)
+            return
       }
 
-      // Prompt GitHub OAuth credentials
       const { clientID, clientSecret } = await inquirer.prompt([
             { type: 'input', name: 'clientID', message: 'Enter GitHub Client ID:' },
             { type: 'input', name: 'clientSecret', message: 'Enter GitHub Client Secret:' },
-      ]);
+      ])
 
-      // Update .env file - append or update keys
-      const envPath = path.join(targetPath, '.env');
-      let envContent = '';
+      // Create or update .env without overwriting if left blank
+      const envPath = path.join(targetPath, '.env')
+      let envContent = ''
       if (fs.existsSync(envPath)) {
-            envContent = fs.readFileSync(envPath, 'utf-8');
+            envContent = fs.readFileSync(envPath, 'utf-8')
       }
+      const envMap = new Map(envContent.split('\n').filter(Boolean).map(line => {
+            const [k, ...v] = line.split('=')
+            return [k, v.join('=')]
+      }))
 
-      // Parse .env lines into a map for updating keys
-      const envLines = envContent.split('\n').filter(Boolean);
-      const envMap = new Map();
-      envLines.forEach(line => {
-            const [key, ...vals] = line.split('=');
-            if (key) envMap.set(key, vals.join('='));
-      });
+      if (clientID) envMap.set('GITHUB_CLIENT_ID', clientID)
+      if (clientSecret) envMap.set('GITHUB_CLIENT_SECRET', clientSecret)
+      if (!envMap.has('SESSION_SECRET')) envMap.set('SESSION_SECRET', 'your_session_secret')
 
-      envMap.set('GITHUB_CLIENT_ID', clientID);
-      envMap.set('GITHUB_CLIENT_SECRET', clientSecret);
-      if (!envMap.has('SESSION_SECRET')) {
-            envMap.set('SESSION_SECRET', 'your_session_secret');
-      }
+      fs.writeFileSync(envPath, Array.from(envMap.entries()).map(([k, v]) => `${k}=${v}`).join('\n'), 'utf-8')
+      console.log('✅ .env updated ')
 
-      const newEnvContent = Array.from(envMap.entries())
-            .map(([k, v]) => `${k}=${v}`)
-            .join('\n');
+      // Copy templates
+      const authRoutesTemplatePath = path.join(__dirname, 'templates', 'routes', 'githubRoutes.ejs')
+      const passportConfigTemplatePath = path.join(__dirname, 'templates', 'config', 'githubStrategy.ejs')
 
-      fs.writeFileSync(envPath, newEnvContent, 'utf-8');
-      console.log('✅ .env updated with GitHub credentials');
+      const routesDir = path.join(targetPath, 'routes')
+      const configDir = path.join(targetPath, 'config')
+      fs.mkdirSync(routesDir, { recursive: true })
+      fs.mkdirSync(configDir, { recursive: true })
 
-      // Copy config/githubStrategy.js
-      const configDir = path.join(targetPath, 'config');
-      fs.mkdirSync(configDir, { recursive: true });
-      fs.copyFileSync(
-            path.join(__dirname, 'templates', 'config', 'githubStrategy.ejs'),
-            path.join(configDir, 'githubStrategy.js')
-      );
+      const authRoutes = ejs.render(fs.readFileSync(authRoutesTemplatePath, 'utf-8'))
+      const passportConfig = ejs.render(fs.readFileSync(passportConfigTemplatePath, 'utf-8'))
 
-      // Copy routes/githubAuth.js
-      const routesDir = path.join(targetPath, 'routes');
-      fs.mkdirSync(routesDir, { recursive: true });
-      fs.copyFileSync(
-            path.join(__dirname, 'templates', 'routes', 'githubAuth.ejs'),
-            path.join(routesDir, 'githubAuth.js')
-      );
+      fs.writeFileSync(path.join(routesDir, 'githubRoutes.js'), authRoutes, 'utf-8')
+      fs.writeFileSync(path.join(configDir, 'githubStrategy.js'), passportConfig, 'utf-8')
+      console.log('✅ OAuth route and passport config created')
 
-      console.log('✅ GitHub strategy & auth routes copied');
+      await ensureAppJsHasOAuthSetup(entryFilePath)
 
-      // Inject imports, dotenv config and middleware into entry file
-      injectGitHubOAuth(entryFilePath);
+      const dependencies = ['express', 'passport', 'passport-github2', 'dotenv', 'express-session']
+      const packageManager = detectPackageManager(targetPath)
 
-      // Install dependencies
-      const dependencies = ['express', 'passport', 'passport-github2', 'dotenv', 'express-session'];
-      const packageManager = detectPackageManager(targetPath);
       if (!packageManager) {
-            console.error('❌ Could not detect package manager. Install manually:', dependencies.join(' '));
-            return;
+            console.error('❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually.')
+            return
       }
 
-      console.log(`📦 Installing dependencies using ${packageManager}...`);
+      console.log(`📦 Installing dependencies using ${packageManager}...`)
       const installCmd =
             packageManager === 'npm'
                   ? `npm install ${dependencies.join(' ')}`
                   : packageManager === 'yarn'
                         ? `yarn add ${dependencies.join(' ')}`
-                        : `pnpm add ${dependencies.join(' ')}`;
+                        : `pnpm add ${dependencies.join(' ')}`
 
-      execSync(installCmd, { cwd: targetPath, stdio: 'inherit' });
+      execSync(installCmd, { cwd: targetPath, stdio: 'inherit' })
 
-      console.log('✅ GitHub OAuth module installed successfully 🚀');
+      const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+      pkg.scripts = pkg.scripts || {}
+      pkg.scripts.start = pkg.scripts.start || `node ${entryFile}`
+      fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2), 'utf-8')
+      console.log('✅ Added "start" script to package.json')
+
+      console.log('✅ GitHub OAuth module installed successfully 🚀')
 }
