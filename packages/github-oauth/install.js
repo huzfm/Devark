@@ -42,7 +42,7 @@ function injectGitHubOAuth(entryFilePath) {
             `import session from 'express-session';`,
             `import passport from 'passport';`,
             `import './config/githubStrategy.js';`,
-            `import authRoutes from './routes/githubAuth.js';`, // Note updated filename 'githubAuth.js'
+            `import githubAuth from './routes/githubAuth.js';`, // Note updated filename 'githubAuth.js'
       ];
       importLines.forEach((imp) => {
             if (!lines.some(line => line.trim() === imp)) {
@@ -61,7 +61,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/', authRoutes);
+app.use('/', githubAuth); 
 `.trim();
 
       if (!entryContent.includes('app.use(session(')) {
