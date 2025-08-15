@@ -5,8 +5,8 @@ const requiredImports = [
       `import 'dotenv/config'`,
       `import session from 'express-session'`,
       `import passport from 'passport'`,
-      `import authRoutes from './routes/authRoutes.js'`,
-      `import './config/passport.js'`,
+      `import googleRoutes from './routes/googleRoutes.js'`,
+      `import './config/googleStrategy.js'`,
 ]
 
 const sessionMiddleware = `app.use(session({
@@ -19,7 +19,7 @@ const requiredMiddleware = [
       sessionMiddleware,
       `app.use(passport.initialize())`,
       `app.use(passport.session())`,
-      `app.use(authRoutes)`,
+      `app.use('/',googleRoutes)`,
 ]
 
 export async function ensureAppJsHasOAuthSetup(appJsPath) {
@@ -59,5 +59,4 @@ export async function ensureAppJsHasOAuthSetup(appJsPath) {
       lines.splice(finalAppLineIndex + 1, 0, ...requiredMiddleware)
 
       fs.writeFileSync(appJsPath, lines.join('\n'), 'utf-8')
-      console.log('✅ OAuth imports + middleware inserted at top and in correct order.')
 }
