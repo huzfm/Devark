@@ -15,7 +15,7 @@ res.redirect("/auth/github/success");
 );
 
 router.get("/auth/github/success", (req, res) => {
-res.json({ message: "GitHub login successful", user: req.user });
+res.send('✅ Logged in successfully!')
 });
 
 export default router;
