@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import addOAuth from '../packages/oauth/install.js';
+import addOAuth from '../packages/google-oauth/install.js';
 import addOtp from '../packages/otp/install.js';
 import addGithubOAuth from '../packages/github-oauth/install.js';
 
@@ -20,7 +20,7 @@ program
             const input = template.toLowerCase().trim();
 
             switch (input) {
-                  case "oauth":
+                  case "google-oauth":
                         await addOAuth(process.cwd());
                         break;
                   case "otp":

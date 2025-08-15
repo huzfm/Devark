@@ -56,8 +56,8 @@ export default async function install(targetPath = process.cwd()) {
       fs.writeFileSync(envPath, `GOOGLE_CLIENT_ID=${clientID}\nGOOGLE_CLIENT_SECRET=${clientSecret}\n`, 'utf-8')
       console.log('✅ .env created')
 
-      const authRoutesTemplatePath = path.join(__dirname, 'templates', 'authRoutes.ejs')
-      const passportConfigTemplatePath = path.join(__dirname, 'templates', 'passport.ejs')
+      const authRoutesTemplatePath = path.join(__dirname, 'templates', 'googleAuth.ejs')
+      const passportConfigTemplatePath = path.join(__dirname, 'templates', 'googleStrategy.ejs')
 
       const routesDir = path.join(targetPath, 'routes')
       const configDir = path.join(targetPath, 'config')
@@ -67,8 +67,8 @@ export default async function install(targetPath = process.cwd()) {
       const authRoutes = ejs.render(fs.readFileSync(authRoutesTemplatePath, 'utf-8'))
       const passportConfig = ejs.render(fs.readFileSync(passportConfigTemplatePath, 'utf-8'))
 
-      fs.writeFileSync(path.join(routesDir, 'authRoutes.js'), authRoutes, 'utf-8')
-      fs.writeFileSync(path.join(configDir, 'passport.js'), passportConfig, 'utf-8')
+      fs.writeFileSync(path.join(routesDir, 'googleAuth.js'), authRoutes, 'utf-8')
+      fs.writeFileSync(path.join(configDir, 'googleStrategy.js'), passportConfig, 'utf-8')
       console.log('✅ OAuth route and passport config created')
 
       await ensureAppJsHasOAuthSetup(entryFilePath)
