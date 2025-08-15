@@ -10,9 +10,6 @@ import { ensureAppJsHasOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-
-
-
 function detectPackageManager(targetPath) {
       if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) return 'pnpm'
       if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) return 'yarn'
@@ -22,7 +19,7 @@ function detectPackageManager(targetPath) {
 
 export default async function install(targetPath = process.cwd()) {
       targetPath = path.resolve(targetPath)
-      console.log("\x1b[32m\x1b[1mThis adds Google-OAuth module to your project. Please follow the instructions carefully.\x1b[0m");
+      console.log("\x1b[32m\x1b[1mThis adds GitHub-OAuth module to your project. Please follow the instructions carefully.\x1b[0m")
 
       const packageJsonPath = path.join(targetPath, 'package.json')
       if (!fs.existsSync(packageJsonPath)) {
@@ -40,24 +37,37 @@ export default async function install(targetPath = process.cwd()) {
       ])
 
       const entryFilePath = path.join(targetPath, entryFile)
-      const entryFileExists = fs.existsSync(entryFilePath)
-
-      if (!entryFileExists) {
+      if (!fs.existsSync(entryFilePath)) {
             console.error(`❌ Entry file "${entryFile}" not found in target project. Aborting.`)
             return
       }
 
       const { clientID, clientSecret } = await inquirer.prompt([
-            { type: 'input', name: 'clientID', message: 'Enter Google Client ID:' },
-            { type: 'input', name: 'clientSecret', message: 'Enter Google Client Secret:' },
+            { type: 'input', name: 'clientID', message: 'Enter GitHub Client ID:' },
+            { type: 'input', name: 'clientSecret', message: 'Enter GitHub Client Secret:' },
       ])
 
+      // Create or update .env without overwriting if left blank
       const envPath = path.join(targetPath, '.env')
-      fs.writeFileSync(envPath, `GOOGLE_CLIENT_ID=${clientID}\nGOOGLE_CLIENT_SECRET=${clientSecret}\n`, 'utf-8')
-      console.log('✅ .env created')
+      let envContent = ''
+      if (fs.existsSync(envPath)) {
+            envContent = fs.readFileSync(envPath, 'utf-8')
+      }
+      const envMap = new Map(envContent.split('\n').filter(Boolean).map(line => {
+            const [k, ...v] = line.split('=')
+            return [k, v.join('=')]
+      }))
 
-      const authRoutesTemplatePath = path.join(__dirname, 'templates', 'authRoutes.ejs')
-      const passportConfigTemplatePath = path.join(__dirname, 'templates', 'passport.ejs')
+      if (clientID) envMap.set('GITHUB_CLIENT_ID', clientID)
+      if (clientSecret) envMap.set('GITHUB_CLIENT_SECRET', clientSecret)
+      if (!envMap.has('SESSION_SECRET')) envMap.set('SESSION_SECRET', 'your_session_secret')
+
+      fs.writeFileSync(envPath, Array.from(envMap.entries()).map(([k, v]) => `${k}=${v}`).join('\n'), 'utf-8')
+      console.log('✅ .env updated ')
+
+      // Copy templates
+      const authRoutesTemplatePath = path.join(__dirname, 'templates', 'routes', 'githubRoutes.ejs')
+      const passportConfigTemplatePath = path.join(__dirname, 'templates', 'config', 'githubStrategy.ejs')
 
       const routesDir = path.join(targetPath, 'routes')
       const configDir = path.join(targetPath, 'config')
@@ -67,13 +77,13 @@ export default async function install(targetPath = process.cwd()) {
       const authRoutes = ejs.render(fs.readFileSync(authRoutesTemplatePath, 'utf-8'))
       const passportConfig = ejs.render(fs.readFileSync(passportConfigTemplatePath, 'utf-8'))
 
-      fs.writeFileSync(path.join(routesDir, 'authRoutes.js'), authRoutes, 'utf-8')
-      fs.writeFileSync(path.join(configDir, 'passport.js'), passportConfig, 'utf-8')
+      fs.writeFileSync(path.join(routesDir, 'githubRoutes.js'), authRoutes, 'utf-8')
+      fs.writeFileSync(path.join(configDir, 'githubStrategy.js'), passportConfig, 'utf-8')
       console.log('✅ OAuth route and passport config created')
 
       await ensureAppJsHasOAuthSetup(entryFilePath)
 
-      const dependencies = ['express', 'passport', 'passport-google-oauth20', 'dotenv', 'express-session']
+      const dependencies = ['express', 'passport', 'passport-github2', 'dotenv', 'express-session']
       const packageManager = detectPackageManager(targetPath)
 
       if (!packageManager) {
@@ -97,5 +107,5 @@ export default async function install(targetPath = process.cwd()) {
       fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2), 'utf-8')
       console.log('✅ Added "start" script to package.json')
 
-      console.log('✅ OAuth module installed successfully 🚀')
+      console.log('✅ GitHub OAuth module installed successfully 🚀')
 }
