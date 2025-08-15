@@ -5,8 +5,8 @@ const requiredImports = [
       `import 'dotenv/config'`,
       `import session from 'express-session'`,
       `import passport from 'passport'`,
-      `import googleRoutes from './routes/googleRoutes.js'`,
-      `import './config/googleStrategy.js'`,
+      `import githubRoutes from './routes/githubRoutes.js'`,
+      `import './config/githubStrategy.js'`,
 ]
 
 const sessionMiddleware = `app.use(session({
@@ -19,7 +19,7 @@ const requiredMiddleware = [
       sessionMiddleware,
       `app.use(passport.initialize())`,
       `app.use(passport.session())`,
-      `app.use('/',googleRoutes)`,
+      `app.use('/',githubRoutes)`,
 ]
 
 export async function ensureAppJsHasOAuthSetup(appJsPath) {

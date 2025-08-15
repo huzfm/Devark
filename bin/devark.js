@@ -2,7 +2,7 @@
 
 import { Command } from 'commander';
 import addOAuth from '../packages/google-oauth/install.js';
-import addOtp from '../packages/otp/install.js';
+import addOtp from '../packages/resend-otp/install.js';
 import addGithubOAuth from '../packages/github-oauth/install.js';
 
 
@@ -23,14 +23,14 @@ program
                   case "google-oauth":
                         await addOAuth(process.cwd());
                         break;
-                  case "otp":
+                  case "resend-otp":
                         await addOtp(process.cwd());
                         break;
                   case "github-oauth":
                         await addGithubOAuth(process.cwd());
                         break;
                   // case 'resend':
-                  //   await addResend();
+                  //   await addResend(process.cwd());
                   //   break;
                   default:
                         console.log(`❌ Template "${template}" not supported yet.`);
