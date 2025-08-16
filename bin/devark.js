@@ -6,9 +6,13 @@ import addOtp from '../packages/resend-otp/install.js';
 import addGithubOAuth from '../packages/github-oauth/install.js';
 import { showDevarkLogo } from '../utils/logo.js';
 
-
-
 const program = new Command();
+
+// Handle Ctrl+C gracefully (SIGINT)
+process.on("SIGINT", () => {
+      console.log("❌ Installation aborted.");
+      process.exit(0);
+});
 
 async function main() {
       // Always show logo first
@@ -40,7 +44,11 @@ async function main() {
                                     console.log(`❌ Template "${template}" not supported yet.`);
                         }
                   } catch (err) {
-                        console.error("❌ Error:", err.message);
+                        if (err.isTtyError || err.message.includes("force closed")) {
+                              console.log("\n❌ Installation aborted.");
+                        } else {
+                              console.error("❌ Error:", err.message);
+                        }
                         process.exit(1);
                   }
             });
