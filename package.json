@@ -1,7 +1,7 @@
 {
   "name": "devark",
   "version": "1.3.0",
-  "description": "CLI tool to scaffold backend features like OAuth",
+  "description": "CLI tool to scaffold backend features like authentications, authorizations, and more.",
   "main": "index.js",
   "type": "module",
   "bin": {
