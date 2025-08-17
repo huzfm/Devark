@@ -17,6 +17,25 @@ function detectPackageManager(targetPath) {
       return null
 }
 
+function installDependencies(targetPath, dependencies) {
+      const packageManager = detectPackageManager(targetPath)
+
+      if (!packageManager) {
+            console.error('❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually:')
+            console.log(`   npm install ${dependencies.join(' ')}`)
+            return
+      }
+
+      const commands = {
+            npm: `npm install ${dependencies.join(' ')}`,
+            yarn: `yarn add ${dependencies.join(' ')}`,
+            pnpm: `pnpm add ${dependencies.join(' ')}`
+      }
+
+      console.log(`📦 Installing dependencies using ${packageManager}...`)
+      execSync(commands[packageManager], { cwd: targetPath, stdio: 'inherit' })
+}
+
 export default async function install(targetPath = process.cwd()) {
       targetPath = path.resolve(targetPath)
       console.log("\x1b[32m\x1b[1mThis adds GitHub-OAuth module to your project. Please follow the instructions carefully.\x1b[0m")
@@ -84,22 +103,7 @@ export default async function install(targetPath = process.cwd()) {
       await ensureAppJsHasOAuthSetup(entryFilePath)
 
       const dependencies = ['express', 'passport', 'passport-github2', 'dotenv', 'express-session']
-      const packageManager = detectPackageManager(targetPath)
-
-      if (!packageManager) {
-            console.error('❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually.')
-            return
-      }
-
-      console.log(`📦 Installing dependencies using ${packageManager}...`)
-      const installCmd =
-            packageManager === 'npm'
-                  ? `npm install ${dependencies.join(' ')}`
-                  : packageManager === 'yarn'
-                        ? `yarn add ${dependencies.join(' ')}`
-                        : `pnpm add ${dependencies.join(' ')}`
-
-      execSync(installCmd, { cwd: targetPath, stdio: 'inherit' })
+      installDependencies(targetPath, dependencies)
 
       const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
       pkg.scripts = pkg.scripts || {}
