@@ -1,126 +1,129 @@
+# 📄 Resend OTP Module (Devark CLI)
 
-# How the `otp` Feature Works (Devark CLI)
-
-> This documentation explains how the `devark add otp` command works internally.
+> This document explains how the `devark add resend-otp` command integrates **Resend-based OTP email verification** into your backend project.
 
 ---
 
 ## 🔐 Goal
 
-To quickly scaffold OTP email verification using the **Resend API** without storing OTPs manually.
+Easily scaffold **OTP email verification** in an Express.js backend using the **Resend API**, without the need to manually store OTPs.
 
 ---
 
 ## ✅ Example Command
 
 ```bash
-npx devark add otp
+npx devark add resend-otp
 ```
 
-This adds the **OTP via email** module to the current Express.js backend project.
+This command installs and configures the **Resend OTP module** into your project.
 
 ---
 
 ## ⚙️ What Happens Behind the Scenes
 
-The CLI runs 5 steps for every feature module:
+When you run `devark add resend-otp`, the CLI executes the following steps:
 
 ---
 
-### 1. Validate and Prepare Files
+### 1. Validate & Prepare Project Files
 
-- Ensures essential files exist:  
+- Ensures essential files are present:  
   - `app.js`  
   - `.env`  
   - `package.json`
-- If any is missing, creates default versions.
 
 **Technologies used:**  
 `fs`, `path`
 
 ---
 
-### 2. Modify `app.js`
+### 2. Update `app.js`
 
-Patches `app.js` to:
+The CLI modifies `app.js` to:
 
-- Ensure `express.json()` middleware is added
+- Add required middleware:
+  ```js
+  app.use(express.json());
+  ```
 - Register OTP routes:
   ```js
   const otpRoutes = require("./routes/otpRoutes");
   app.use("/", otpRoutes);
   ```
 
-**Safety Checks:**
-- Only inserts code if it's not already present.
+**Built-in Safety:**  
+Code is only inserted if not already present.
 
 ---
 
 ### 3. Install Dependencies
 
-Automatically installs the following:
+Automatically installs required packages:
 
 ```bash
 pnpm add express dotenv resend
 ```
 
-Also supports `npm` or `yarn` based on project.
+- Supports **pnpm**, **npm**, or **yarn**, depending on your project setup.
 
 ---
 
-### 4. Generate Route and Controller Files
+### 4. Generate Controllers & Routes
 
-Creates the following structure:
+Creates OTP logic and routes inside your project:
 
 ```
 /controllers/
-  └── otpFunctions.js     ← Sends and verifies OTP (no local storage)
-
+  └── otpFunctions.js   ← Handles sending & verifying OTP
 /routes/
-  └── otpRoutes.js        ← Exposes API routes:
-                               POST /send-otp
-                               POST /verify-otp
+  └── otpRoutes.js      ← Exposes REST API endpoints:
+                            POST /send-otp
+                            POST /verify-otp
 ```
 
-Templates are rendered using `.ejs` and filled with correct logic.
+Templates are generated from `.ejs` files bundled with the module.
 
 ---
 
-### 5. Update `.env` and Prompt Inputs
+### 5. Configure Environment Variables
 
-Prompts user for:
+Prompts you for:
 
 - `RESEND_API_KEY`
 - `FROM_EMAIL`
 
-These are then saved into `.env` file:
+Then appends them to `.env`:
 
 ```
-RESEND_API_KEY=your-key-here
+RESEND_API_KEY=your-api-key
 FROM_EMAIL=admin@example.com
 ```
 
 ---
 
-## 🔄 Flow: How OTP Verification Works
+## 🔄 OTP Verification Flow
 
-1. **User hits `/send-otp` with an email**  
+1. **Request OTP**  
+   Client calls `/send-otp` with an email.  
    → A 6-digit OTP is generated  
-   → OTP is sent using Resend API  
-   → A hash of the OTP is returned to the client
+   → OTP is sent via **Resend API**  
+   → Server returns an HMAC hash of the OTP to the client
 
-2. **User hits `/verify-otp` with OTP + hash**  
-   → Verifies OTP on the server using HMAC  
-   → Returns success/failure
+2. **Verify OTP**  
+   Client calls `/verify-otp` with the OTP + hash.  
+   → Server verifies using **HMAC**  
+   → Responds with **success** or **failure**
 
-**✅ No OTP is stored** — secure by design.
+**Key Point:**  
+✅ No OTP is stored on the server — fully stateless and secure.
 
 ---
 
-## 🗂 Folder Structure (Feature Module)
+## 📂 Module Folder Structure
 
 ```
-modules/
+packages/
   └── otp/
       ├── templates/
       │   ├── controllers/
@@ -134,14 +137,14 @@ modules/
 
 ## 🧰 Technologies Used
 
-- `express` – Web framework
-- `dotenv` – Load environment variables
-- `resend` – For sending OTP emails
-- `crypto` – HMAC hashing for OTP verification
+- **express** – API framework  
+- **dotenv** – Manage environment variables  
+- **resend** – Send OTP emails  
+- **crypto** – Secure HMAC hashing  
 
 ---
 
-## 📂 Final Project Structure Example
+## 📦 Final Project Structure (after install)
 
 ```
 app.js
@@ -154,28 +157,30 @@ controllers/
 
 ---
 
-## 🛠 How to Add a New Feature (Devark CLI)
+## 🛠 Adding a New Feature (Devark CLI)
 
-1. Create folder `modules/<feature>/`
+To add another module in Devark:
+
+1. Create `modules/<feature>/`  
 2. Add:
-   - `templates/` (e.g. for routes/controllers)
-   - `install.js` to define the module logic
-3. Register feature in CLI entry file (`bin/devark.js`)
+   - `templates/` → route & controller `.ejs` files  
+   - `install.js` → installation logic  
+3. Register feature in the CLI entry file (`bin/devark.js`)
 
 ---
 
-## 🌟 Future Ideas for OTP
+## 🌟 Future Improvements for OTP Module
 
-- Add expiration logic (currently handled stateless)
-- Use Redis for rate limiting
-- Add SMS support (e.g. Twilio)
+- Add OTP expiration time  
+- Implement rate limiting with Redis  
+- Add SMS support (e.g., **Twilio**)  
 
 ---
 
 ## ✅ Requirements
 
-- Node.js 18+
-- Project must have:
+- Node.js **18+**
+- A project with:
   - `package.json`
   - `app.js`
   - `.env`
