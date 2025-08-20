@@ -58,7 +58,7 @@ devark add resend-otp
     ├── packages/              # Feature modules
     │   ├── Google-Ooauth/
     │   ├── resend-otp/
-    │   └── Github-Oauth/          =
+    │   └── Github-Oauth/          
     ├── utils/                # Shared utilities
     └── package.json
 
