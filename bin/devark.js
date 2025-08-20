@@ -21,7 +21,7 @@ async function main() {
       program
             .name('devark')
             .description('Devark CLI - Modular backend scaffolder')
-            .version('1.0.0');
+            .version('1.5.0');
 
       program
             .command('add <template>')
