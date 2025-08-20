@@ -69,8 +69,7 @@ devark add resend-otp
 
 - [x] Google OAuth
 - [x] GitHub OAuth
-- [x] Resend Email
-- [x] OTP Module
+- [x] Resend Email OTP
 - [ ] S3 Uploads (Coming Soon)
 - [ ] Stripe Payments (Coming Soon)
 
