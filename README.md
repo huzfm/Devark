@@ -22,6 +22,13 @@ pnpm install devark
 
 ---
 
+## Link the CLI Globally (for local development)
+
+```bash
+pnpm link --global
+
+```
+
 ## Usage
 
 ### Add Google-OAuth
