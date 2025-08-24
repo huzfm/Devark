@@ -1,31 +1,37 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import { defineConfig } from 'eslint/config';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import eslintPluginNode from 'eslint-plugin-n';
 
-export default defineConfig([
+/** @type {import('eslint').Linter.Config[]} */
+export default [
   {
-    files: ['**/*.{js,mjs,cjs}'],
+    files: ['**/*.{js,ts,tsx,mjs,cjs}'],
+    ignores: ['node_modules/**', 'dist/**', 'build/**'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: {
-        ...globals.node, // ✅ Node.js environment
-      },
     },
-    extends: [
-      js.configs.recommended, // ✅ use @eslint/js recommended rules
-    ],
+    plugins: {
+      n: eslintPluginNode,
+    },
     rules: {
-      semi: ['error', 'always'],
-      quotes: ['error', 'single', { allowTemplateLiterals: true }],
-      indent: ['off', 6], // 2 spaces
-      'no-console': 'off', // console.log → warning
-      eqeqeq: ['error', 'always'], // force === instead of ==
-      'keyword-spacing': ['error', { before: true, after: true }], // if (x) { … }
-      'no-multi-spaces': 'error', // disallow multiple spaces
-      'no-unused-vars': 'off',
-      //  curly: ['error', 'all'], // always use braces
-      //  'newline-before-return': 'error',
+      'n/no-unsupported-features/es-syntax': 'off',
+      'prettier/prettier': [
+        'error',
+        {
+          semi: true,
+          singleQuote: true,
+          tabWidth: 2,
+          trailingComma: 'all',
+          printWidth: 80,
+        },
+      ],
+      quotes: [
+        'error',
+        'single',
+        { avoidEscape: true, allowTemplateLiterals: true },
+      ],
+      indent: ['warn', 2],
     },
   },
-]);
+  eslintPluginPrettierRecommended,
+];
