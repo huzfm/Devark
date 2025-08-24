@@ -1,63 +1,57 @@
 {
-      "name": "devark",
-      "version": "1.5.0",
-      "description": "CLI tool to scaffold backend features like authentications, authorizations, and more.",
-      "main": "index.js",
-      "type": "module",
-      "bin": {
-            "devark": "bin/devark.js"
-      },
-      "scripts": {
-            "test": "echo \"Error: no test specified\" && exit 1",
-            "lint": "eslint .",
-            "lint:fix": "eslint . --fix",
-            "format": "prettier --write .",
-            "prepare": "husky install"
-      },
-      "keywords": [
-            "backend",
-            "oauth",
-            "cli",
-            "express",
-            "generator"
-      ],
-      "author": "huzfm",
-      "license": "ISC",
-      "dependencies": {
-            "chalk": "^5.5.0",
-            "chalk-animation": "^2.0.3",
-            "commander": "^14.0.0",
-            "ejs": "^3.1.10",
-            "execa": "^9.6.0",
-            "express": "^5.1.0",
-            "figlet": "^1.8.2",
-            "fs-extra": "^11.3.0",
-            "inquirer": "^12.9.0"
-      },
-      "repository": {
-            "type": "git",
-            "url": "git+https://github.com/huzfm/Devark.git"
-      },
-      "bugs": {
-            "url": "https://github.com/huzfm/Devark/issues"
-      },
-      "homepage": "https://github.com/huzfm/Devark#readme",
-      "devDependencies": {
-            "@eslint/js": "^9.34.0",
-            "@microsoft/eslint-formatter-sarif": "^3.1.0",
-            "eslint": "^9.34.0",
-            "eslint-config-prettier": "^10.1.8",
-            "eslint-plugin-n": "^17.21.3",
-            "eslint-plugin-prettier": "^5.5.4",
-            "globals": "^16.3.0",
-            "husky": "^8.0.3",
-            "lint-staged": "^16.1.5",
-            "prettier": "^3.6.2"
-      },
-      "lint-staged": {
-            "*.{js,ts,tsx,mjs,cjs}": [
-                  "pnpm exec eslint --fix",
-                  "pnpm exec prettier --write"
-            ]
-      }
+  "name": "devark",
+  "version": "1.5.0",
+  "description": "CLI tool to scaffold backend features like authentications, authorizations, and more.",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "devark": "bin/devark.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install"
+  },
+  "keywords": [
+    "backend",
+    "oauth",
+    "cli",
+    "express",
+    "generator"
+  ],
+  "author": "huzfm",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^5.5.0",
+    "chalk-animation": "^2.0.3",
+    "commander": "^14.0.0",
+    "ejs": "^3.1.10",
+    "execa": "^9.6.0",
+    "express": "^5.1.0",
+    "figlet": "^1.8.2",
+    "fs-extra": "^11.3.0",
+    "inquirer": "^12.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huzfm/Devark.git"
+  },
+  "bugs": {
+    "url": "https://github.com/huzfm/Devark/issues"
+  },
+  "homepage": "https://github.com/huzfm/Devark#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@microsoft/eslint-formatter-sarif": "^3.1.0",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^17.21.3",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.3.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2"
+  },
+  "lint-staged": {
+    "*.js": "eslint --fix"
+  }
 }

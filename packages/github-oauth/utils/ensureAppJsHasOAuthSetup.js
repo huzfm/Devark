@@ -60,7 +60,9 @@ export async function ensureAppJsHasOAuthSetup(appJsPath) {
   ];
   lines = lines.filter(
     (line) =>
-      !middlewareKeywords.some((keyword) => line.trim().startsWith(keyword)),
+      !middlewareKeywords.some((keyword) =>
+        line.trim().startsWith(keyword),
+      ),
   );
 
   // Insert all middlewares in correct order after app = express()

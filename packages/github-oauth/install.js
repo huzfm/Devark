@@ -57,9 +57,7 @@ export default async function install(targetPath = process.cwd()) {
 
       const packageJsonPath = path.join(targetPath, 'package.json');
       if (!fs.existsSync(packageJsonPath)) {
-            console.error(
-                  '❌ No package.json found in the target project. Aborting.',
-            );
+            console.error('❌ No package.json found in the target project. Aborting.');
 
             return;
       }

@@ -1,37 +1,21 @@
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import eslintPluginNode from 'eslint-plugin-n';
-
-/** @type {import('eslint').Linter.Config[]} */
+/** @type {import("eslint").FlatConfig[]} */
 export default [
       {
-            files: ['**/*.{js,ts,tsx,mjs,cjs}'],
-            ignores: ['node_modules/**', 'dist/**', 'build/**'],
+            files: ["*.js"],
             languageOptions: {
-                  ecmaVersion: 'latest',
-                  sourceType: 'module',
-            },
-            plugins: {
-                  n: eslintPluginNode,
+                  ecmaVersion: "latest",
+                  sourceType: "module",
             },
             rules: {
-                  'n/no-unsupported-features/es-syntax': 'off',
-                  'prettier/prettier': [
-                        'error',
-                        {
-                              semi: true,
-                              singleQuote: true,
-                              tabWidth: 6,
-                              trailingComma: 'all',
-                              printWidth: 80,
-                        },
-                  ],
-                  quotes: [
-                        'error',
-                        'single',
-                        { avoidEscape: true, allowTemplateLiterals: true },
-                  ],
-                  indent: ['warn', 2],
+                  "no-unused-vars": "warn",
+                  "no-undef": "error",
+                  "no-redeclare": "error",
+                  "no-console": "off",
+                  "semi": ["error", "always"],
+                  "quotes": ["error", "double"],
+
+                  // 6-space indentation
+                  "indent": ["error", 6, { "SwitchCase": 2 }]
             },
       },
-      eslintPluginPrettierRecommended,
 ];
