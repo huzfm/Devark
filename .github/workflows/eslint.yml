@@ -18,7 +18,7 @@ jobs:
       actions: read
 
     steps:
-      # 1️⃣ Checkout the code
+      # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
