@@ -3,40 +3,47 @@ import gradient from 'gradient-string';
 import chalkAnimation from 'chalk-animation';
 
 export async function showDevarkLogo() {
-      return new Promise((resolve) => {
-            console.clear();
+  return new Promise((resolve) => {
+    console.clear();
 
-            figlet(
-                  'Devark',
-                  {
-                        font: 'ANSI Shadow',
-                        horizontalLayout: 'default',
-                        verticalLayout: 'default',
-                  },
-                  (err, data) => {
-                        if (err) {
-                              console.log('Error creating logo');
-                              resolve();
-                         
-                              return;
-                        }
+    figlet(
+      'Devark',
+      {
+        font: 'ANSI Shadow',
+        horizontalLayout: 'default',
+        verticalLayout: 'default',
+      },
+      (err, data) => {
+        if (err) {
+          console.log('Error creating logo');
+          resolve();
 
-                        // Logo gradient
-                        const grayGradient = gradient(['#f8fafc', '#e2e8f0', '#94a3b8', '#64748b']);
-                        console.log(grayGradient.multiline(data));
-                        console.log('');
+          return;
+        }
 
-                        // Tagline
-                        const taglineGradient = gradient(['#cbd5e1', '#94a3b8']);
-                        console.log(taglineGradient(' ⚡ The fastest way to build your backend|'));
+        // Logo gradient
+        const grayGradient = gradient([
+          '#f8fafc',
+          '#e2e8f0',
+          '#94a3b8',
+          '#64748b',
+        ]);
+        console.log(grayGradient.multiline(data));
+        console.log('');
 
-                        // Animated line
+        // Tagline
+        const taglineGradient = gradient(['#cbd5e1', '#94a3b8']);
+        console.log(
+          taglineGradient(' ⚡ The fastest way to build your backend|'),
+        );
 
-                        setTimeout(() => {
-                              console.log('');
-                              resolve();
-                        }, 0); // increased to let animation run longer
-                  }
-            );
-      });
+        // Animated line
+
+        setTimeout(() => {
+          console.log('');
+          resolve();
+        }, 0); // increased to let animation run longer
+      },
+    );
+  });
 }

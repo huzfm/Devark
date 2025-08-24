@@ -28,10 +28,10 @@ When you run `devark add resend-otp`, the CLI executes the following steps:
 
 ### 1. Validate & Prepare Project Files
 
-- Ensures essential files are present:  
-  - `app.js`  
-  - `.env`  
-  - `package.json`
+- Ensures essential files are present:
+     - `app.js`
+     - `.env`
+     - `package.json`
 
 **Technologies used:**  
 `fs`, `path`
@@ -43,14 +43,14 @@ When you run `devark add resend-otp`, the CLI executes the following steps:
 The CLI modifies `app.js` to:
 
 - Add required middleware:
-  ```js
-  app.use(express.json());
-  ```
+     ```js
+     app.use(express.json());
+     ```
 - Register OTP routes:
-  ```js
-  const otpRoutes = require("./routes/otpRoutes");
-  app.use("/", otpRoutes);
-  ```
+     ```js
+     const otpRoutes = require('./routes/otpRoutes');
+     app.use('/', otpRoutes);
+     ```
 
 **Built-in Safety:**  
 Code is only inserted if not already present.
@@ -137,10 +137,10 @@ packages/
 
 ## 🧰 Technologies Used
 
-- **express** – API framework  
-- **dotenv** – Manage environment variables  
-- **resend** – Send OTP emails  
-- **crypto** – Secure HMAC hashing  
+- **express** – API framework
+- **dotenv** – Manage environment variables
+- **resend** – Send OTP emails
+- **crypto** – Secure HMAC hashing
 
 ---
 
@@ -161,19 +161,19 @@ controllers/
 
 To add another module in Devark:
 
-1. Create `modules/<feature>/`  
+1. Create `modules/<feature>/`
 2. Add:
-   - `templates/` → route & controller `.ejs` files  
-   - `install.js` → installation logic  
+      - `templates/` → route & controller `.ejs` files
+      - `install.js` → installation logic
 3. Register feature in the CLI entry file (`bin/devark.js`)
 
 ---
 
 ## 🌟 Future Improvements for OTP Module
 
-- Add OTP expiration time  
-- Implement rate limiting with Redis  
-- Add SMS support (e.g., **Twilio**)  
+- Add OTP expiration time
+- Implement rate limiting with Redis
+- Add SMS support (e.g., **Twilio**)
 
 ---
 
@@ -181,6 +181,6 @@ To add another module in Devark:
 
 - Node.js **18+**
 - A project with:
-  - `package.json`
-  - `app.js`
-  - `.env`
+     - `package.json`
+     - `app.js`
+     - `.env`
