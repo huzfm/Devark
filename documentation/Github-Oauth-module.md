@@ -29,8 +29,8 @@ The CLI runs 5 main steps for GitHub OAuth:
 **Uses:**
 
 ```js
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
 ```
 
 ---
@@ -39,18 +39,19 @@ import path from "path";
 
 The CLI guarantees that:
 
-- Required **GitHub OAuth imports** exist  
-- `express-session` middleware is placed **before** `passport.initialize()`  
-- GitHub OAuth routes are registered  
-- Duplicate lines are avoided  
+- Required **GitHub OAuth imports** exist
+- `express-session` middleware is placed **before** `passport.initialize()`
+- GitHub OAuth routes are registered
+- Duplicate lines are avoided
 
 **Logic Example:**
 
 ```js
 if (!appJs.includes("const passport = require('passport')")) {
-  const updated = `const passport = require('passport');
+      const updated =
+            `const passport = require('passport');
 ` + appJs;
-  fs.writeFileSync("app.js", updated);
+      fs.writeFileSync('app.js', updated);
 }
 ```
 
@@ -120,26 +121,26 @@ modules/
       └── ensureAppJsHasOAuthSetup.js
 ```
 
-- **install.js** → Entry point for feature setup  
-- **ensureAppJsHasOAuthSetup.js** → Patches existing `app.js` with GitHub OAuth logic  
+- **install.js** → Entry point for feature setup
+- **ensureAppJsHasOAuthSetup.js** → Patches existing `app.js` with GitHub OAuth logic
 
 ---
 
 ## 🔄 GitHub OAuth Setup Workflow
 
-| Step | Purpose                               | Tools Used               |
-|------|---------------------------------------|--------------------------|
-| 1️⃣   | Setup / Validate files                | `fs`, `path`             |
-| 2️⃣   | Patch `app.js` with GitHub OAuth      | regex, string checks     |
-| 3️⃣   | Install deps (`passport-github2`)     | `child_process.execSync` |
-| 4️⃣   | Add GitHub OAuth route templates      | `fs.copyFileSync`        |
-| 5️⃣   | Update `.env`, `package.json`         | string, JSON             |
+| Step | Purpose                           | Tools Used               |
+| ---- | --------------------------------- | ------------------------ |
+| 1️⃣   | Setup / Validate files            | `fs`, `path`             |
+| 2️⃣   | Patch `app.js` with GitHub OAuth  | regex, string checks     |
+| 3️⃣   | Install deps (`passport-github2`) | `child_process.execSync` |
+| 4️⃣   | Add GitHub OAuth route templates  | `fs.copyFileSync`        |
+| 5️⃣   | Update `.env`, `package.json`     | string, JSON             |
 
 ---
 
 ## ✅ Requirements
 
-- Node.js v18+  
-- A GitHub OAuth App (created in **GitHub Developer Settings**)  
-- `package.json` initialized in the project  
-- One of: `pnpm`, `npm`, or `yarn` installed globally  
+- Node.js v18+
+- A GitHub OAuth App (created in **GitHub Developer Settings**)
+- `package.json` initialized in the project
+- One of: `pnpm`, `npm`, or `yarn` installed globally
