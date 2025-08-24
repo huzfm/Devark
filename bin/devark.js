@@ -9,8 +9,8 @@ import { showDevarkLogo } from '../utils/logo.js';
 const program = new Command();
 
 // Handle Ctrl+C gracefully (SIGINT)
-process.on("SIGINT", () => {
-      console.log("❌ Installation aborted.");
+process.on('SIGINT', () => {
+      console.log('❌ Installation aborted.');
       process.exit(0);
 });
 
@@ -31,23 +31,23 @@ async function main() {
 
                   try {
                         switch (input) {
-                              case "google-oauth":
+                              case 'google-oauth':
                                     await addOAuth(process.cwd());
                                     break;
-                              case "resend-otp":
+                              case 'resend-otp':
                                     await addOtp(process.cwd());
                                     break;
-                              case "github-oauth":
+                              case 'github-oauth':
                                     await addGithubOAuth(process.cwd());
                                     break;
                               default:
                                     console.log(`❌ Template "${template}" not supported yet.`);
                         }
                   } catch (err) {
-                        if (err.isTtyError || err.message.includes("force closed")) {
-                              console.log("\n❌ Installation aborted.");
+                        if (err.isTtyError || err.message.includes('force closed')) {
+                              console.log('\n❌ Installation aborted.');
                         } else {
-                              console.error("❌ Error:", err.message);
+                              console.error('❌ Error:', err.message);
                         }
                         process.exit(1);
                   }

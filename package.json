@@ -8,7 +8,10 @@
     "devark": "bin/devark.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky"
   },
   "keywords": [
     "backend",
@@ -37,5 +40,15 @@
   "bugs": {
     "url": "https://github.com/huzfm/Devark/issues"
   },
-  "homepage": "https://github.com/huzfm/Devark#readme"
+  "homepage": "https://github.com/huzfm/Devark#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "eslint": "^9.34.0",
+    "globals": "^16.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5"
+  },
+  "lint-staged": {
+    "**/*.{js,mjs,cjs}": "eslint --fix"
+  }
 }
