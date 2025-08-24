@@ -1,51 +1,53 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# ESLint is a tool for identifying and reporting on patterns
-# found in ECMAScript/JavaScript code.
-# More details at https://github.com/eslint/eslint
-# and https://eslint.org
-
 name: ESLint
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ "master" ]
+    branches: ["master"]
   schedule:
-    - cron: '21 23 * * 1'
+    - cron: "21 23 * * 1"
 
 jobs:
   eslint:
-    name: Run eslint scanning
+    name: Run ESLint and upload SARIF
     runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
-      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+      actions: read
+
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install ESLint
-        run: |
-          npm install eslint@8.10.0
-          npm install @microsoft/eslint-formatter-sarif@3.1.0
+      # 2️⃣ Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
+      # 3️⃣ Install dependencies with pnpm
+      - name: Install dependencies
+        run: |
+          corepack enable
+          pnpm install
+
+      # 4️⃣ Run ESLint and generate SARIF
       - name: Run ESLint
         env:
           SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
-        run: npx eslint .
-          --config .eslintrc.js
-          --ext .js,.jsx,.ts,.tsx
-          --format @microsoft/eslint-formatter-sarif
-          --output-file eslint-results.sarif
+        run: |
+          pnpm exec eslint . \
+            --config eslint.config.js \
+            --ext .js,.jsx,.ts,.tsx \
+            --format @microsoft/eslint-formatter-sarif \
+            --output-file eslint-results.sarif
         continue-on-error: true
 
-      - name: Upload analysis results to GitHub
+      # 5️⃣ Upload ESLint SARIF results to GitHub
+      - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: eslint-results.sarif
