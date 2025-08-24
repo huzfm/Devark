@@ -17,18 +17,30 @@ export async function showDevarkLogo() {
                         if (err) {
                               console.log('Error creating logo');
                               resolve();
-                         
+
                               return;
                         }
 
                         // Logo gradient
-                        const grayGradient = gradient(['#f8fafc', '#e2e8f0', '#94a3b8', '#64748b']);
+                        const grayGradient = gradient([
+                              '#f8fafc',
+                              '#e2e8f0',
+                              '#94a3b8',
+                              '#64748b',
+                        ]);
                         console.log(grayGradient.multiline(data));
                         console.log('');
 
                         // Tagline
-                        const taglineGradient = gradient(['#cbd5e1', '#94a3b8']);
-                        console.log(taglineGradient(' ⚡ The fastest way to build your backend|'));
+                        const taglineGradient = gradient([
+                              '#cbd5e1',
+                              '#94a3b8',
+                        ]);
+                        console.log(
+                              taglineGradient(
+                                    ' ⚡ The fastest way to build your backend|',
+                              ),
+                        );
 
                         // Animated line
 
@@ -36,7 +48,7 @@ export async function showDevarkLogo() {
                               console.log('');
                               resolve();
                         }, 0); // increased to let animation run longer
-                  }
+                  },
             );
       });
 }

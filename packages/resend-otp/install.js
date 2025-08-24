@@ -10,10 +10,16 @@ const __dirname = path.dirname(__filename);
 
 // -------------------- Package Manager Detector --------------------
 function detectPackageManager(targetPath) {
-      if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) {return 'pnpm';}
-      if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) {return 'yarn';}
-      if (fs.existsSync(path.join(targetPath, 'package-lock.json'))) {return 'npm';}
-     
+      if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) {
+            return 'pnpm';
+      }
+      if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) {
+            return 'yarn';
+      }
+      if (fs.existsSync(path.join(targetPath, 'package-lock.json'))) {
+            return 'npm';
+      }
+
       return null;
 }
 
@@ -22,16 +28,18 @@ function installDependencies(targetPath, dependencies) {
       const packageManager = detectPackageManager(targetPath);
 
       if (!packageManager) {
-            console.error('❌ Could not detect package manager. Please install manually:');
+            console.error(
+                  '❌ Could not detect package manager. Please install manually:',
+            );
             console.log(`   npm install ${dependencies.join(' ')}`);
-          
+
             return;
       }
 
       const commands = {
             npm: `npm install ${dependencies.join(' ')}`,
             yarn: `yarn add ${dependencies.join(' ')}`,
-            pnpm: `pnpm add ${dependencies.join(' ')}`
+            pnpm: `pnpm add ${dependencies.join(' ')}`,
       };
 
       console.log(`📦 Installing dependencies using ${packageManager}...`);
@@ -40,7 +48,9 @@ function installDependencies(targetPath, dependencies) {
 
 // -------------------- OTP Module Installer --------------------
 export default async function install(targetPath) {
-      console.log('\x1b[32m\x1b[1mThis adds Resend-OTP module to your project. Please follow the instructions carefully.\x1b[0m');
+      console.log(
+            '\x1b[32m\x1b[1mThis adds Resend-OTP module to your project. Please follow the instructions carefully.\x1b[0m',
+      );
 
       // Prompt for env vars
       const answers = await inquirer.prompt([
@@ -53,42 +63,46 @@ export default async function install(targetPath) {
                   type: 'input',
                   name: 'FROM_EMAIL',
                   message: 'Enter the FROM email address:',
-            }
+            },
       ]);
 
       // Ensure controllers and routes folders exist
       const controllersDir = path.join(targetPath, 'controllers');
       const routesDir = path.join(targetPath, 'routes');
-      if (!fs.existsSync(controllersDir)) {fs.mkdirSync(controllersDir);}
-      if (!fs.existsSync(routesDir)) {fs.mkdirSync(routesDir);}
+      if (!fs.existsSync(controllersDir)) {
+            fs.mkdirSync(controllersDir);
+      }
+      if (!fs.existsSync(routesDir)) {
+            fs.mkdirSync(routesDir);
+      }
 
       // Generate OTP controllers
       const otpControllerTemplate = fs.readFileSync(
             path.join(__dirname, 'templates', 'otp.ejs'),
-            'utf-8'
+            'utf-8',
       );
       const otpFunctionsTemplate = fs.readFileSync(
             path.join(__dirname, 'templates', 'otpFunctions.ejs'),
-            'utf-8'
+            'utf-8',
       );
 
       fs.writeFileSync(
             path.join(controllersDir, 'otp.js'),
-            ejs.render(otpControllerTemplate, {})
+            ejs.render(otpControllerTemplate, {}),
       );
       fs.writeFileSync(
             path.join(controllersDir, 'otpFunctions.js'),
-            ejs.render(otpFunctionsTemplate, {})
+            ejs.render(otpFunctionsTemplate, {}),
       );
 
       // Generate OTP routes
       const otpRoutesTemplate = fs.readFileSync(
             path.join(__dirname, 'templates', 'otpRoutes.ejs'),
-            'utf-8'
+            'utf-8',
       );
       fs.writeFileSync(
             path.join(routesDir, 'otpRoutes.js'),
-            ejs.render(otpRoutesTemplate, {})
+            ejs.render(otpRoutesTemplate, {}),
       );
 
       // Update app.js
@@ -99,17 +113,19 @@ export default async function install(targetPath) {
             if (!appJsContent.includes('express.json()')) {
                   appJsContent = appJsContent.replace(
                         /const app = express\(\);/,
-                        'const app = express();\napp.use(express.json());'
+                        'const app = express();\napp.use(express.json());',
                   );
             }
 
             if (!appJsContent.includes('otpRoutes')) {
                   appJsContent = appJsContent.replace(
                         /app\.use\(.*\);/,
-                        match => `${match}\napp.use("/", otpRoutes);`
+                        (match) => `${match}\napp.use("/", otpRoutes);`,
                   );
                   if (!appJsContent.includes('import otpRoutes')) {
-                        appJsContent = 'import otpRoutes from "./routes/otpRoutes.js";\n' + appJsContent;
+                        appJsContent =
+                              'import otpRoutes from "./routes/otpRoutes.js";\n' +
+                              appJsContent;
                   }
             }
 
@@ -120,7 +136,9 @@ export default async function install(targetPath) {
 
       // Update .env file
       const envPath = path.join(targetPath, '.env');
-      let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+      let envContent = fs.existsSync(envPath)
+            ? fs.readFileSync(envPath, 'utf-8')
+            : '';
       if (!envContent.includes('RESEND_API_KEY')) {
             envContent += `\nRESEND_API_KEY=${answers.RESEND_API_KEY}\n`;
       }

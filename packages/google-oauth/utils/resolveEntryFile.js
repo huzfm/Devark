@@ -21,7 +21,9 @@ export async function resolveEntryFile(targetPath) {
                   return userInput; // valid, return to caller
             }
 
-            console.error(`❌ Entry file "${userInput}" not found in ${targetPath}. Try again.`);
+            console.error(
+                  `❌ Entry file "${userInput}" not found in ${targetPath}. Try again.`,
+            );
             entryFile = userInput;
       }
 }

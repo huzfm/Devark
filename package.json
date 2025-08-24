@@ -9,9 +9,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "prepare": "husky"
+    "prepare": "husky install"
   },
   "keywords": [
     "backend",
@@ -45,11 +43,15 @@
     "@eslint/js": "^9.34.0",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
     "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^17.21.3",
+    "eslint-plugin-prettier": "^5.5.4",
     "globals": "^16.3.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.5"
+    "husky": "^8.0.3",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2"
   },
   "lint-staged": {
-    "**/*.{js,mjs,cjs}": "eslint --fix"
+    "*.js": "eslint --fix"
   }
 }

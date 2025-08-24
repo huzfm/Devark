@@ -1,31 +1,21 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import { defineConfig } from 'eslint/config';
+/** @type {import("eslint").FlatConfig[]} */
+export default [
+      {
+            files: ["*.js"],
+            languageOptions: {
+                  ecmaVersion: "latest",
+                  sourceType: "module",
+            },
+            rules: {
+                  "no-unused-vars": "warn",
+                  "no-undef": "error",
+                  "no-redeclare": "error",
+                  "no-console": "off",
+                  "semi": ["error", "always"],
+                  "quotes": ["error", "double"],
 
-export default defineConfig([
-  {
-    files: ['**/*.{js,mjs,cjs}'],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: {
-        ...globals.node, // ✅ Node.js environment
+                  // 6-space indentation
+                  "indent": ["error", 6, { "SwitchCase": 2 }]
+            },
       },
-    },
-    extends: [
-      js.configs.recommended, // ✅ use @eslint/js recommended rules
-    ],
-    rules: {
-      semi: ['error', 'always'],
-      quotes: ['error', 'single', { allowTemplateLiterals: true }],
-      indent: ['off', 6], // 2 spaces
-      'no-console': 'off', // console.log → warning
-      eqeqeq: ['error', 'always'], // force === instead of ==
-      'keyword-spacing': ['error', { before: true, after: true }], // if (x) { … }
-      'no-multi-spaces': 'error', // disallow multiple spaces
-      'no-unused-vars': 'off',
-      //  curly: ['error', 'all'], // always use braces
-      //  'newline-before-return': 'error',
-    },
-  },
-]);
+];
