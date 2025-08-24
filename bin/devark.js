@@ -41,10 +41,15 @@ async function main() {
             await addGithubOAuth(process.cwd());
             break;
           default:
-            console.log(`❌ Template "${template}" not supported yet.`);
+            console.log(
+              `❌ Template "${template}" not supported yet.`,
+            );
         }
       } catch (err) {
-        if (err.isTtyError || err.message.includes('force closed')) {
+        if (
+          err.isTtyError ||
+          err.message.includes('force closed')
+        ) {
           console.log('\n❌ Installation aborted.');
         } else {
           console.error('❌ Error:', err.message);
