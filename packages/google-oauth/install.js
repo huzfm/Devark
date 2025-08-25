@@ -9,19 +9,8 @@ import { ensureAppJsHasOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function detectPackageManager(targetPath) {
-      if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) {
-            return 'pnpm';
-      }
-      if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) {
-            return 'yarn';
-      }
-      if (fs.existsSync(path.join(targetPath, 'package-lock.json'))) {
-            return 'npm';
-      }
 
-      return null;
-}
+
 
 export default async function installGoogleOAuth(targetPath = process.cwd()) {
       targetPath = path.resolve(targetPath);
@@ -30,9 +19,7 @@ export default async function installGoogleOAuth(targetPath = process.cwd()) {
       );
       const packageJsonPath = path.join(targetPath, 'package.json');
       if (!fs.existsSync(packageJsonPath)) {
-            console.error(
-                  '❌ No package.json found in the target project. Run `npm init -y` first.',
-            );
+            console.error('❌ No package.json found in the target project. Run `npm init -y` first.');
 
             return;
       }
@@ -137,9 +124,7 @@ export default async function installGoogleOAuth(targetPath = process.cwd()) {
       const packageManager = detectPackageManager(targetPath);
 
       if (!packageManager) {
-            console.error(
-                  '❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually.',
-            );
+            console.error('❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually.');
 
             return;
       }
@@ -149,8 +134,8 @@ export default async function installGoogleOAuth(targetPath = process.cwd()) {
             packageManager === 'npm'
                   ? `npm install ${dependencies.join(' ')}`
                   : packageManager === 'yarn'
-                    ? `yarn add ${dependencies.join(' ')}`
-                    : `pnpm add ${dependencies.join(' ')}`;
+                        ? `yarn add ${dependencies.join(' ')}`
+                        : `pnpm add ${dependencies.join(' ')}`;
       execSync(installCmd, { cwd: targetPath, stdio: 'inherit' });
 
       // add start script if missing
