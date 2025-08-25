@@ -10,15 +10,9 @@ const __dirname = path.dirname(__filename);
 
 // -------------------- Package Manager Detector --------------------
 function detectPackageManager(targetPath) {
-      if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) {
-            return 'pnpm';
-      }
-      if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) {
-            return 'yarn';
-      }
-      if (fs.existsSync(path.join(targetPath, 'package-lock.json'))) {
-            return 'npm';
-      }
+      if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) { return 'pnpm'; }
+      if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) { return 'yarn'; }
+      if (fs.existsSync(path.join(targetPath, 'package-lock.json'))) { return 'npm'; }
 
       return null;
 }
@@ -69,12 +63,8 @@ export default async function install(targetPath) {
       // Ensure controllers and routes folders exist
       const controllersDir = path.join(targetPath, 'controllers');
       const routesDir = path.join(targetPath, 'routes');
-      if (!fs.existsSync(controllersDir)) {
-            fs.mkdirSync(controllersDir);
-      }
-      if (!fs.existsSync(routesDir)) {
-            fs.mkdirSync(routesDir);
-      }
+      if (!fs.existsSync(controllersDir)) { fs.mkdirSync(controllersDir); }
+      if (!fs.existsSync(routesDir)) { fs.mkdirSync(routesDir); }
 
       // Generate OTP controllers
       const otpControllerTemplate = fs.readFileSync(
