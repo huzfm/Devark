@@ -10,13 +10,21 @@ const __dirname = path.dirname(__filename);
 
 // -------------------- Package Manager Detector --------------------
 function detectPackageManager(targetPath) {
-      if (fs.existsSync(path.join(targetPath, 'pnpm-lock.yaml'))) { return 'pnpm'; }
-      if (fs.existsSync(path.join(targetPath, 'yarn.lock'))) { return 'yarn'; }
-      if (fs.existsSync(path.join(targetPath, 'package-lock.json'))) { return 'npm'; }
+      const lockFiles = {
+            pnpm: 'pnpm-lock.yaml',
+            yarn: 'yarn.lock',
+            npm: 'package-lock.json',
+      };
+
+      for (const [manager, fileName] of Object.entries(lockFiles)) {
+            const filePath = path.join(targetPath, fileName);
+            if (fs.existsSync(filePath)) {
+                  return manager;
+            }
+      }
 
       return null;
 }
-
 // -------------------- Dependency Installer --------------------
 function installDependencies(targetPath, dependencies) {
       const packageManager = detectPackageManager(targetPath);

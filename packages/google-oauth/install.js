@@ -9,6 +9,23 @@ import { ensureAppJsHasOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function detectPackageManager(targetPath) {
+      const lockFiles = {
+            pnpm: 'pnpm-lock.yaml',
+            yarn: 'yarn.lock',
+            npm: 'package-lock.json',
+      };
+
+      for (const [manager, fileName] of Object.entries(lockFiles)) {
+            const filePath = path.join(targetPath, fileName);
+            if (fs.existsSync(filePath)) {
+                  return manager;
+            }
+      }
+
+      return null;
+}
+
 
 
 
