@@ -62,6 +62,9 @@ export default async function installOtp(targetPath) {
       renderTemplate(
             path.join(templatesDir, "otpFunctions.ejs"),
             path.join(controllersDir, "otpFunctions.js"),
+            {}
+      );
+      renderTemplate(
             path.join(templatesDir, "otp.ejs"),
             path.join(controllersDir, "otp.js"),
             {}
