@@ -15,14 +15,19 @@ process.on('SIGINT', () => {
 });
 
 async function main() {
-  // Always show logo first
-  await showDevarkLogo();
+  const args = process.argv.slice(2);
+
+  // Show logo only if it's NOT the custom help command
+  if (!(args.length && args[0] === 'help') && !(args.length && args[0] === '--version')) {
+    await showDevarkLogo();
+  }
 
   program
     .name('devark')
     .description('Devark CLI - Modular backend scaffolder')
     .version('1.5.0');
 
+  // `add` command
   program
     .command('add <template>')
     .description('Add a backend module to your project')
@@ -41,15 +46,10 @@ async function main() {
             await addGithubOAuth(process.cwd());
             break;
           default:
-            console.log(
-              `❌ Template "${template}" not supported yet.`,
-            );
+            console.log(`❌ Template "${template}" not supported yet.`);
         }
       } catch (err) {
-        if (
-          err.isTtyError ||
-          err.message.includes('force closed')
-        ) {
+        if (err.isTtyError || err.message.includes('force closed')) {
           console.log('\n❌ Installation aborted.');
         } else {
           console.error('❌ Error:', err.message);
@@ -58,8 +58,30 @@ async function main() {
       }
     });
 
-  // Show help if no command is passed
-  if (!process.argv.slice(2).length) {
+  // Custom `help` command
+  program
+    .command('help')
+    .description('Show all available Devark commands and modules')
+    .action(() => {
+      console.log(`
+📌 Devark CLI - Available Commands
+
+  npx devark add <module>    Add a backend module into your project
+
+✅ Supported Modules:
+  - google-oauth    → Google authentication
+  - github-oauth    → GitHub authentication
+  - resend-otp      → OTP via Resend email
+
+💡 Examples:
+ npx devark add google-oauth
+ npx devark add github-oauth
+ npx devark add resend-otp
+`);
+    });
+
+  // Default help if no args
+  if (!args.length) {
     program.outputHelp();
   }
 
