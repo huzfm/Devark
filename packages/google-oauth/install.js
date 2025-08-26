@@ -1,170 +1,96 @@
-import fs from 'fs';
-import path from 'path';
-import ejs from 'ejs';
-import { fileURLToPath } from 'url';
-import inquirer from 'inquirer';
-import { execSync } from 'child_process';
-import { ensureAppJsHasOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import inquirer from "inquirer";
+import { injectEnvVars } from "../../utils/injectEnvVars.js";
+import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup.js";
+import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
 
+// __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function detectPackageManager(targetPath) {
-      const lockFiles = {
-            pnpm: 'pnpm-lock.yaml',
-            yarn: 'yarn.lock',
-            npm: 'package-lock.json',
-      };
+export default async function installGoogleOAuth(targetPath) {
+      console.log('\x1b[1m\x1b[32mInstalling Google OAuth to your project. Please read the instructions carefully.\x1b[0m');
 
-      for (const [manager, fileName] of Object.entries(lockFiles)) {
-            const filePath = path.join(targetPath, fileName);
-            if (fs.existsSync(filePath)) {
-                  return manager;
-            }
-      }
-
-      return null;
-}
-
-
-
-
-export default async function installGoogleOAuth(targetPath = process.cwd()) {
-      targetPath = path.resolve(targetPath);
-      console.log(
-            '\x1b[32m\x1b[1mThis adds Google-OAuth module to your project. Please follow the instructions carefully.\x1b[0m',
-      );
-      const packageJsonPath = path.join(targetPath, 'package.json');
-      if (!fs.existsSync(packageJsonPath)) {
-            console.error('❌ No package.json found in the target project. Run `npm init -y` first.');
-
-            return;
-      }
-
-      // ask for entry file
+      //  First prompt only for entry file
       const { entryFile } = await inquirer.prompt([
             {
-                  type: 'input',
-                  name: 'entryFile',
-                  message: 'Enter your entry file (e.g., app.js, server.js):',
-                  default: 'app.js',
+                  type: "input",
+                  name: "entryFile",
+                  message: "What is your entry file? (e.g., app.js , index.js , server.js)",
+                  default: "app.js",
             },
       ]);
 
+      //  Ensure entry file exists before asking anything else
       const entryFilePath = path.join(targetPath, entryFile);
       if (!fs.existsSync(entryFilePath)) {
-            console.error(`❌ Entry file "${entryFile}" not found. Aborting.`);
-
+            console.error(`❌ Entry file ${entryFile} not found in ${targetPath}. Aborting installation.`);
             return;
       }
 
-      // ask for Google OAuth credentials
-      const { clientID, clientSecret } = await inquirer.prompt([
+      //  Now ask for secrets only if entry file exists
+      const { clientID, clientSecret, callbackURL } = await inquirer.prompt([
             {
-                  type: 'input',
-                  name: 'clientID',
-                  message: 'Enter Google Client ID:',
+                  type: "input",
+                  name: "clientID",
+                  message: "Enter your Google OAuth Client ID:",
             },
             {
-                  type: 'input',
-                  name: 'clientSecret',
-                  message: 'Enter Google Client Secret:',
+                  type: "input",
+                  name: "clientSecret",
+                  message: "Enter your Google OAuth Client Secret:",
             },
       ]);
 
-      // append to .env
-      const envPath = path.join(targetPath, '.env');
-      let envContent = '';
-      if (fs.existsSync(envPath)) {
-            envContent = fs.readFileSync(envPath, 'utf-8');
-      }
-      if (!envContent.includes('GOOGLE_CLIENT_ID')) {
-            envContent += `\nGOOGLE_CLIENT_ID=${clientID}`;
-      }
-      if (!envContent.includes('GOOGLE_CLIENT_SECRET')) {
-            envContent += `\nGOOGLE_CLIENT_SECRET=${clientSecret}`;
-      }
-      fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
-      console.log('✅ .env updated with Google credentials');
+      //  Inject into .env
+      injectEnvVars(targetPath, {
+            GOOGLE_CLIENT_ID: clientID,
+            GOOGLE_CLIENT_SECRET: clientSecret,
+            GOOGLE_CALLBACK_URL: callbackURL,
+      });
 
-      // scaffold routes & config
-      const routesDir = path.join(targetPath, 'routes');
-      const configDir = path.join(targetPath, 'config');
-      fs.mkdirSync(routesDir, { recursive: true });
-      fs.mkdirSync(configDir, { recursive: true });
+      //  Patch entry file
+      ensureAppJsHasOAuthSetup(entryFilePath);
 
-      const authRoutesTemplatePath = path.join(
-            __dirname,
-            'templates',
-            'googleRoute.ejs',
-      );
-      const passportConfigTemplatePath = path.join(
-            __dirname,
-            'templates',
-            'googleStrategy.ejs',
+      //  Copy EJS templates → project files
+      const templatesDir = path.join(__dirname, "templates");
+
+      // config/GoogleStrategy.js
+      const configDir = path.join(targetPath, "config");
+      ensureDir(configDir);
+      renderTemplate(
+            path.join(templatesDir, "config", "googleStrategy.ejs"),
+            path.join(configDir, "googleStrategy.js"),
+            { clientID, clientSecret, callbackURL }
       );
 
-      const routesFile = path.join(routesDir, 'googleRoutes.js');
-      const configFile = path.join(configDir, 'googleStrategy.js');
+      // routes/authRoutes.js
+      const routesDir = path.join(targetPath, "routes");
+      ensureDir(routesDir);
+      renderTemplate(
+            path.join(templatesDir, "routes", "googleRoutes.ejs"),
+            path.join(routesDir, "googleRoutes.js"),
+            {}
+      );
 
-      if (!fs.existsSync(routesFile)) {
-            const authRoutes = ejs.render(
-                  fs.readFileSync(authRoutesTemplatePath, 'utf-8'),
-            );
-            fs.writeFileSync(routesFile, authRoutes, 'utf-8');
-            console.log('✅ googleRoutes.js created');
-      } else {
-            console.log('⚠️ googleRoutes.js already exists, skipping.');
-      }
+      console.log("📂 OAuth config & routes created!");
 
-      if (!fs.existsSync(configFile)) {
-            const passportConfig = ejs.render(
-                  fs.readFileSync(passportConfigTemplatePath, 'utf-8'),
-            );
-            fs.writeFileSync(configFile, passportConfig, 'utf-8');
-            console.log('✅ googleStrategy.js created');
-      } else {
-            console.log('⚠️ googleStrategy.js already exists, skipping.');
-      }
-
-      // ensure app.js patched
-      await ensureAppJsHasOAuthSetup(entryFilePath);
-
-      // install only required deps
-      const dependencies = [
-            'express',
-            'passport',
-            'passport-google-oauth20',
-            'dotenv',
-            'express-session',
-      ];
+      //  Install dependencies
       const packageManager = detectPackageManager(targetPath);
+      const deps = ["passport", 'passport-google-oauth20', "express-session", "dotenv"];
 
       if (!packageManager) {
-            console.error('❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually.');
-
+            console.error(
+                  "❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually:"
+            );
+            console.log(`npm install ${deps.join(" ")}`);
             return;
       }
 
-      console.log(`📦 Installing dependencies using ${packageManager}...`);
-      const installCmd =
-            packageManager === 'npm'
-                  ? `npm install ${dependencies.join(' ')}`
-                  : packageManager === 'yarn'
-                        ? `yarn add ${dependencies.join(' ')}`
-                        : `pnpm add ${dependencies.join(' ')}`;
-      execSync(installCmd, { cwd: targetPath, stdio: 'inherit' });
+      installDependencies(targetPath, deps);
 
-      // add start script if missing
-      const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-      pkg.scripts = pkg.scripts || {};
-      if (!pkg.scripts.start) {
-            pkg.scripts.start = `node ${entryFile}`;
-      }
-      fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2), 'utf-8');
-      console.log('✅ Added/verified "start" script in package.json');
-
-      console.log(
-            '\x1b[32m✅ Google OAuth module installed successfully 🚀\x1b[0m',
-      );
+      console.log("✅ Google OAuth setup complete!");
 }
