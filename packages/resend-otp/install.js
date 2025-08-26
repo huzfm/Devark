@@ -1,152 +1,94 @@
-import fs from 'fs';
-import path from 'path';
-import ejs from 'ejs';
-import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
-import inquirer from 'inquirer';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import inquirer from "inquirer";
+import { injectEnvVars } from "../../utils/injectEnvVars.js";
+import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
+import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup.js";
 
+// __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// -------------------- Package Manager Detector --------------------
-function detectPackageManager(targetPath) {
-      const lockFiles = {
-            pnpm: 'pnpm-lock.yaml',
-            yarn: 'yarn.lock',
-            npm: 'package-lock.json',
-      };
+export default async function installOtp(targetPath) {
+      console.log("ℹ️ Installing Resend OTP module...");
 
-      for (const [manager, fileName] of Object.entries(lockFiles)) {
-            const filePath = path.join(targetPath, fileName);
-            if (fs.existsSync(filePath)) {
-                  return manager;
-            }
-      }
-
-      return null;
-}
-// -------------------- Dependency Installer --------------------
-function installDependencies(targetPath, dependencies) {
-      const packageManager = detectPackageManager(targetPath);
-
-      if (!packageManager) {
-            console.error(
-                  '❌ Could not detect package manager. Please install manually:',
-            );
-            console.log(`   npm install ${dependencies.join(' ')}`);
-
-            return;
-      }
-
-      const commands = {
-            npm: `npm install ${dependencies.join(' ')}`,
-            yarn: `yarn add ${dependencies.join(' ')}`,
-            pnpm: `pnpm add ${dependencies.join(' ')}`,
-      };
-
-      console.log(`📦 Installing dependencies using ${packageManager}...`);
-      execSync(commands[packageManager], { cwd: targetPath, stdio: 'inherit' });
-}
-
-// -------------------- OTP Module Installer --------------------
-export default async function install(targetPath) {
-      console.log(
-            '\x1b[32m\x1b[1mThis adds Resend-OTP module to your project. Please follow the instructions carefully.\x1b[0m',
-      );
-
-      // Prompt for env vars
-      const answers = await inquirer.prompt([
+      // ✅ Prompt entry file first
+      const { entryFile } = await inquirer.prompt([
             {
-                  type: 'input',
-                  name: 'RESEND_API_KEY',
-                  message: 'Enter your Resend API Key:',
-            },
-            {
-                  type: 'input',
-                  name: 'FROM_EMAIL',
-                  message: 'Enter the FROM email address:',
+                  type: "input",
+                  name: "entryFile",
+                  message: "What is your entry file? (e.g., app.js , index.js , server.js)",
+                  default: "app.js",
             },
       ]);
 
-      // Ensure controllers and routes folders exist
-      const controllersDir = path.join(targetPath, 'controllers');
-      const routesDir = path.join(targetPath, 'routes');
-      if (!fs.existsSync(controllersDir)) { fs.mkdirSync(controllersDir); }
-      if (!fs.existsSync(routesDir)) { fs.mkdirSync(routesDir); }
-
-      // Generate OTP controllers
-      const otpControllerTemplate = fs.readFileSync(
-            path.join(__dirname, 'templates', 'otp.ejs'),
-            'utf-8',
-      );
-      const otpFunctionsTemplate = fs.readFileSync(
-            path.join(__dirname, 'templates', 'otpFunctions.ejs'),
-            'utf-8',
-      );
-
-      fs.writeFileSync(
-            path.join(controllersDir, 'otp.js'),
-            ejs.render(otpControllerTemplate, {}),
-      );
-      fs.writeFileSync(
-            path.join(controllersDir, 'otpFunctions.js'),
-            ejs.render(otpFunctionsTemplate, {}),
-      );
-
-      // Generate OTP routes
-      const otpRoutesTemplate = fs.readFileSync(
-            path.join(__dirname, 'templates', 'otpRoutes.ejs'),
-            'utf-8',
-      );
-      fs.writeFileSync(
-            path.join(routesDir, 'otpRoutes.js'),
-            ejs.render(otpRoutesTemplate, {}),
-      );
-
-      // Update app.js
-      const appJsPath = path.join(targetPath, 'app.js');
-      if (fs.existsSync(appJsPath)) {
-            let appJsContent = fs.readFileSync(appJsPath, 'utf-8');
-
-            if (!appJsContent.includes('express.json()')) {
-                  appJsContent = appJsContent.replace(
-                        /const app = express\(\);/,
-                        'const app = express();\napp.use(express.json());',
-                  );
-            }
-
-            if (!appJsContent.includes('otpRoutes')) {
-                  appJsContent = appJsContent.replace(
-                        /app\.use\(.*\);/,
-                        (match) => `${match}\napp.use("/", otpRoutes);`,
-                  );
-                  if (!appJsContent.includes('import otpRoutes')) {
-                        appJsContent =
-                              'import otpRoutes from "./routes/otpRoutes.js";\n' +
-                              appJsContent;
-                  }
-            }
-
-            fs.writeFileSync(appJsPath, appJsContent);
-      } else {
-            console.error('❌ app.js not found in target project.');
+      const entryFilePath = path.join(targetPath, entryFile);
+      if (!fs.existsSync(entryFilePath)) {
+            console.error(`❌ Entry file ${entryFile} not found in ${targetPath}. Aborting.`);
+            return;
       }
 
-      // Update .env file
-      const envPath = path.join(targetPath, '.env');
-      let envContent = fs.existsSync(envPath)
-            ? fs.readFileSync(envPath, 'utf-8')
-            : '';
-      if (!envContent.includes('RESEND_API_KEY')) {
-            envContent += `\nRESEND_API_KEY=${answers.RESEND_API_KEY}\n`;
-      }
-      if (!envContent.includes('FROM_EMAIL')) {
-            envContent += `FROM_EMAIL=${answers.FROM_EMAIL}\n`;
-      }
-      fs.writeFileSync(envPath, envContent);
+      // ✅ Prompt for env vars
+      const { apiKey, fromEmail } = await inquirer.prompt([
+            {
+                  type: "input",
+                  name: "apiKey",
+                  message: "Enter your Resend API Key:",
+            },
+            {
+                  type: "input",
+                  name: "fromEmail",
+                  message: "Enter your FROM email address:",
+            },
+      ]);
 
-      // Install only required dependencies
-      installDependencies(targetPath, ['express', 'resend', 'dotenv']);
+      // ✅ Inject into .env
+      injectEnvVars(targetPath, {
+            RESEND_API_KEY: apiKey,
+            FROM_EMAIL: fromEmail,
+      });
 
-      console.log('✅ OTP module setup complete!');
+      // ✅ Patch entry file with express.json + otpRoutes
+      ensureAppJsHasOtpSetup(entryFilePath);
+
+      // ✅ Copy EJS templates → project files
+      const templatesDir = path.join(__dirname, "templates");
+
+      // controllers/otpController.js
+      const controllersDir = path.join(targetPath, "controllers");
+      ensureDir(controllersDir);
+      renderTemplate(
+            path.join(templatesDir, "otpFunctions.ejs"),
+            path.join(controllersDir, "otpFunctions.js"),
+            path.join(templatesDir, "otp.ejs"),
+            path.join(controllersDir, "otp.js"),
+            {}
+      );
+
+      // routes/otpRoutes.js
+      const routesDir = path.join(targetPath, "routes");
+      ensureDir(routesDir);
+      renderTemplate(
+            path.join(templatesDir, "otpRoutes.ejs"),
+            path.join(routesDir, "otpRoutes.js"),
+            {}
+      );
+
+      console.log("📂 OTP controller & routes created!");
+
+      // ✅ Install dependencies
+      const packageManager = detectPackageManager(targetPath);
+      const deps = ["resend"]
+
+      if (!packageManager) {
+            console.error("❌ Could not detect package manager. Please install manually:");
+            console.log(`npm install ${deps.join(" ")}`);
+            return;
+      }
+
+      installDependencies(targetPath, deps);
+
+      console.log("✅ Resend OTP setup complete!");
 }
