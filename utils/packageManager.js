@@ -32,3 +32,16 @@ export function installDependencies(targetPath, dependencies) {
       console.log(`📦 Installing dependencies using ${packageManager}...`);
       execSync(commands[packageManager], { cwd: targetPath, stdio: 'inherit' });
 }
+
+export function isValidNodeProject(targetPath) {
+      const pkgPath = path.join(targetPath, "package.json");
+      if (!fs.existsSync(pkgPath)) {
+            return false;
+      }
+      try {
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+            return pkg && typeof pkg === "object";
+      } catch {
+            return false;
+      }
+}
