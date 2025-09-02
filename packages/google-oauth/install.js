@@ -6,13 +6,35 @@ import { injectEnvVars } from "../../utils/injectEnvVars.js";
 import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup.js";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
 import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
+import { isValidNodeProject } from "../../utils/packageManager.js";
 
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
+
+
 export default async function installGoogleOAuth(targetPath) {
+      if (!isValidNodeProject(targetPath)) {
+            console.error("❌ The folder does not contain a valid Node.js project (missing or invalid package.json). Aborting installation.");
+            return;
+      }
       console.log('\x1b[1m\x1b[32mInstalling Google OAuth to your project. Please read the instructions carefully.\x1b[0m');
+      const packageManager = detectPackageManager(targetPath);
+
+
+      if (packageManager) {
+            console.log(`${packageManager} detected as package manager. Installing dependencies...`);
+      }
+      else {
+            console.error(
+                  "❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually:"
+            );
+            return;
+      }
+
+
 
       //  First prompt only for entry file
       const { entryFile } = await inquirer.prompt([
@@ -52,6 +74,10 @@ export default async function installGoogleOAuth(targetPath) {
             GOOGLE_CALLBACK_URL: callbackURL,
       });
 
+
+      const deps = ["passport", 'passport-google-oauth20', "express-session", "dotenv"];
+      installDependencies(targetPath, deps);
+
       //  Patch entry file
       ensureAppJsHasOAuthSetup(entryFilePath);
 
@@ -79,18 +105,7 @@ export default async function installGoogleOAuth(targetPath) {
       console.log("📂 OAuth config & routes created!");
 
       //  Install dependencies
-      const packageManager = detectPackageManager(targetPath);
-      const deps = ["passport", 'passport-google-oauth20', "express-session", "dotenv"];
 
-      if (!packageManager) {
-            console.error(
-                  "❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually:"
-            );
-            console.log(`npm install ${deps.join(" ")}`);
-            return;
-      }
-
-      installDependencies(targetPath, deps);
 
       console.log("✅ Google OAuth setup complete!");
 }
