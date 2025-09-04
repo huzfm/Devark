@@ -31,6 +31,7 @@ export default async function installGoogleOAuth(targetPath) {
             console.error(
                   "❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually:"
             );
+
             return;
       }
 
@@ -104,7 +105,7 @@ export default async function installGoogleOAuth(targetPath) {
 
       console.log("📂 OAuth config & routes created!");
 
-      //  Install dependencies
+
 
 
       console.log("✅ Google OAuth setup complete!");
