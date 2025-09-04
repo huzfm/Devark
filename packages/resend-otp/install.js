@@ -6,14 +6,25 @@ import { injectEnvVars } from "../../utils/injectEnvVars.js";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
 import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
 import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup.js";
-
+import { isValidNodeProject } from "../../utils/packageManager.js";
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function installOtp(targetPath) {
-      console.log("ℹ️ Installing Resend OTP module...");
+      if (!isValidNodeProject(targetPath)) {
+            console.error("❌ The folder does not contain a valid Node.js project (missing or invalid package.json). Aborting.");
+            return;
+      }
+      console.log('\x1b[1m\x1b[32mInstalling Resend-OTP module to your project. Please read the instructions carefully.\x1b[0m');
 
+      const packageManager = detectPackageManager(targetPath);
+      if (packageManager) {
+            console.log(` ${packageManager} detected as package manager.`);
+      } else {
+            console.error("❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually:");
+            return;
+      }
       // ✅ Prompt entry file first
       const { entryFile } = await inquirer.prompt([
             {
@@ -49,6 +60,8 @@ export default async function installOtp(targetPath) {
             RESEND_API_KEY: apiKey,
             FROM_EMAIL: fromEmail,
       });
+      const deps = ["resend"]
+      installDependencies(targetPath, deps);
 
       // ✅ Patch entry file with express.json + otpRoutes
       ensureAppJsHasOtpSetup(entryFilePath);
@@ -81,17 +94,6 @@ export default async function installOtp(targetPath) {
 
       console.log("📂 OTP controller & routes created!");
 
-      // ✅ Install dependencies
-      const packageManager = detectPackageManager(targetPath);
-      const deps = ["resend"]
-
-      if (!packageManager) {
-            console.error("❌ Could not detect package manager. Please install manually:");
-            console.log(`npm install ${deps.join(" ")}`);
-            return;
-      }
-
-      installDependencies(targetPath, deps);
 
       console.log("✅ Resend OTP setup complete!");
 }

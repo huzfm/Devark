@@ -24,6 +24,7 @@
     "chalk": "^5.5.0",
     "chalk-animation": "^2.0.3",
     "commander": "^14.0.0",
+    "devark": "^1.5.1",
     "ejs": "^3.1.10",
     "execa": "^9.6.0",
     "express": "^5.1.0",

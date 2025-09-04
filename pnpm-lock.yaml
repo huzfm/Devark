@@ -17,6 +17,9 @@ importers:
       commander:
         specifier: ^14.0.0
         version: 14.0.0
+      devark:
+        specifier: ^1.5.1
+        version: 1.5.1(@types/node@24.3.0)
       ejs:
         specifier: ^3.1.10
         version: 3.1.10
@@ -511,6 +514,10 @@ packages:
   depd@2.0.0:
     resolution: {integrity: sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==}
     engines: {node: '>= 0.8'}
+
+  devark@1.5.1:
+    resolution: {integrity: sha512-l9MXK+O0wiAZf6xyjvQ9XK/DasgkNwfLthB0MzfBm85MG1GkX332cpe3+w+yDQNPaF1JPlEMvNZi0ib/lxhXqw==}
+    hasBin: true
 
   doctrine@3.0.0:
     resolution: {integrity: sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==}
@@ -1947,6 +1954,21 @@ snapshots:
   deep-is@0.1.4: {}
 
   depd@2.0.0: {}
+
+  devark@1.5.1(@types/node@24.3.0):
+    dependencies:
+      chalk: 5.6.0
+      chalk-animation: 2.0.3
+      commander: 14.0.0
+      ejs: 3.1.10
+      execa: 9.6.0
+      express: 5.1.0
+      figlet: 1.8.2
+      fs-extra: 11.3.1
+      inquirer: 12.9.1(@types/node@24.3.0)
+    transitivePeerDependencies:
+      - '@types/node'
+      - supports-color
 
   doctrine@3.0.0:
     dependencies:
