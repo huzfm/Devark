@@ -69,7 +69,7 @@ export default async function installGithubOAuth(targetPath) {
       });
 
 
-      const deps = ["passport", 'passport-google-oauth20', "express-session", "dotenv"];
+      const deps = ["passport", 'passport-github2', "express-session", "dotenv"];
       installDependencies(targetPath, deps);
       //  Patch entry file
       ensureAppJsHasOAuthSetup(entryFilePath);
