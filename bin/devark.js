@@ -4,7 +4,8 @@ import { Command } from 'commander';
 import addOAuth from '../packages/google-oauth/install.js';
 import addOtp from '../packages/resend-otp/install.js';
 import addGithubOAuth from '../packages/github-oauth/install.js';
-import { showDevarkLogo } from '../utils/logo.js';
+import nodemongo from '../packages/node-mongodb-template/install.js';
+import { showDevarkLogo } from '../utils/logo.js'; ``
 
 const program = new Command();
 
@@ -44,6 +45,9 @@ async function main() {
             break;
           case 'github-oauth':
             await addGithubOAuth(process.cwd());
+            break;
+          case 'node-mongo':
+            await nodemongo(process.cwd());
             break;
           default:
             console.log(`❌ Template "${template}" not supported yet.`);
