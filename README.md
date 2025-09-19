@@ -69,7 +69,8 @@ devark add resend-otp
 - [x] Google OAuth
 - [x] GitHub OAuth
 - [x] Resend Email OTP
+- [x] Node-MongoDB project template
 - [ ] S3 Uploads (Coming Soon)
-- [ ] Stripe Payments (Coming Soon)
+- [ ]  Payments (Coming Soon)
 
 ---
