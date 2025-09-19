@@ -45,3 +45,26 @@ export function isValidNodeProject(targetPath) {
             return false;
       }
 }
+
+
+
+/**
+ * Case 2: Freshly scaffolded project (user chooses package manager)
+ */
+export async function installDepsWithChoice(targetPath, dependencies, packageManager) {
+      const commands = {
+            npm: `npm install ${dependencies.join(" ")}`,
+            yarn: `yarn add ${dependencies.join(" ")}`,
+            pnpm: `pnpm add ${dependencies.join(" ")}`,
+      };
+
+      if (!commands[packageManager]) {
+            console.error("❌ Invalid package manager provided.");
+            return false;
+      }
+
+      console.log(`📦 Installing dependencies using ${packageManager}...`);
+      execSync(commands[packageManager], { cwd: targetPath, stdio: "inherit" });
+      console.log("✅ Dependencies installed successfully!");
+      return true;
+}

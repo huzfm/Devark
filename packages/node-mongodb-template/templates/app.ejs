@@ -1,0 +1,26 @@
+import express from "express";
+import mongoose from "mongoose";
+import morgan from "morgan";
+import dotenv from "dotenv";
+import userRoutes from "./routes/userRoutes.js";
+
+dotenv.config();
+
+const app = express();
+
+app.use(express.json());
+app.use(morgan("dev"));
+
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI)
+.then(() => console.log("Conncted to MongoDB Database successfully"))
+.catch(err => console.error(" DB Connection Error:", err.message));
+
+// Routes
+
+app.use("/api/users", userRoutes);
+
+app.get("/", (req, res) => res.send("🚀 Node.js + MongoDB template is working!"));
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
