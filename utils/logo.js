@@ -1,6 +1,5 @@
 import figlet from 'figlet';
 import gradient from 'gradient-string';
-import chalkAnimation from 'chalk-animation';
 
 export async function showDevarkLogo() {
       return new Promise((resolve) => {
@@ -9,7 +8,7 @@ export async function showDevarkLogo() {
             figlet(
                   'Devark',
                   {
-                        font: 'ANSI Shadow',
+                        font: 'mini',
                         horizontalLayout: 'default',
                         verticalLayout: 'default',
                   },
@@ -17,7 +16,6 @@ export async function showDevarkLogo() {
                         if (err) {
                               console.log('Error creating logo');
                               resolve();
-
                               return;
                         }
 
@@ -38,16 +36,15 @@ export async function showDevarkLogo() {
                         ]);
                         console.log(
                               taglineGradient(
-                                    ' ⚡ The fastest way to build your backend|',
+                                    ' ⚡ The fastest way to build your backend |',
                               ),
                         );
 
                         // Animated line
-
                         setTimeout(() => {
                               console.log('');
                               resolve();
-                        }, 0); // increased to let animation run longer
+                        }, 0);
                   },
             );
       });

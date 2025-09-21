@@ -62,9 +62,9 @@ async function main() {
         }
       } catch (err) {
         if (err.isTtyError || err.message.includes('force closed')) {
-          console.log('\n❌ Installation aborted.');
+          console.log('\n Installation aborted.');
         } else {
-          console.error('❌ Error:', err.message);
+          console.error(' Error:', err.message);
         }
         process.exit(1);
       }
