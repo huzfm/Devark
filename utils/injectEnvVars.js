@@ -2,6 +2,10 @@ import fs from "fs";
 import path from "path";
 
 export function injectEnvVars(targetPath, vars) {
+      if (!fs.existsSync(targetPath)) {
+            fs.mkdirSync(targetPath, { recursive: true });
+      }
+
       const envPath = path.join(targetPath, ".env");
       let envContent = "";
       if (fs.existsSync(envPath)) {
@@ -22,12 +26,27 @@ export function injectEnvVars(targetPath, vars) {
             if (value) envMap.set(key, value);
       }
 
-      fs.writeFileSync(
-            envPath,
-            Array.from(envMap.entries())
-                  .map(([k, v]) => `${k}=${v}`)
-                  .join("\n"),
-            "utf-8"
-      );
-      console.log("✅ .env updated");
+      const content = Array.from(envMap.entries())
+            .map(([k, v]) => `${k}=${v}`)
+            .join("\n");
+
+      // Write atomically: write to tmp file then rename.
+      const tmpPath = envPath + ".tmp";
+      try {
+            fs.writeFileSync(tmpPath, content, 'utf-8');
+            // Try to flush to disk (best-effort)
+            try {
+                  const fd = fs.openSync(tmpPath, 'r');
+                  fs.fsyncSync(fd);
+                  fs.closeSync(fd);
+            } catch (err) {
+                  // ignore fsync errors on environments that don't support it
+            }
+            fs.renameSync(tmpPath, envPath);
+            console.log("✅ .env updated");
+      } catch (err) {
+            // Fallback: attempt direct write
+            fs.writeFileSync(envPath, content, 'utf-8');
+            console.log("✅ .env updated");
+      }
 }
