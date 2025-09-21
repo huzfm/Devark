@@ -8,13 +8,8 @@
     "devark": "bin/devark.js"
   },
   "scripts": {
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest tests/unit/packageManager.test.js tests/unit/injectEnvVars.test.js tests/unit/filePaths.test.js",
-    "test:all": "NODE_OPTIONS='--experimental-vm-modules' jest",
-    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch",
-    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage",
-    "test:unit": "NODE_OPTIONS='--experimental-vm-modules' jest tests/unit",
-    "test:integration": "NODE_OPTIONS='--experimental-vm-modules' jest tests/integration",
-    "prepare": "husky install"
+    "start": "node ./bin/devark.js",
+    "prepare": "pnpm husky install"
   },
   "keywords": [
     "backend",
@@ -26,7 +21,6 @@
   "author": "huzfm",
   "license": "ISC",
   "dependencies": {
-    "@types/jest": "^30.0.0",
     "chalk": "^5.5.0",
     "chalk-animation": "^2.0.3",
     "commander": "^14.0.0",
@@ -36,9 +30,7 @@
     "express": "^5.1.0",
     "figlet": "^1.8.2",
     "fs-extra": "^11.3.0",
-    "inquirer": "^12.9.0",
-    "jest": "^30.1.3",
-    "jest-environment-node": "^30.1.2"
+    "inquirer": "^12.9.0"
   },
   "repository": {
     "type": "git",
@@ -51,6 +43,7 @@
   "devDependencies": {
     "@eslint/js": "^9.34.0",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
+    "cross-env": "^10.0.0",
     "eslint": "^9.34.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-n": "^17.21.3",
