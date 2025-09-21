@@ -18,7 +18,7 @@ export default async function runNodeMongoGenerator(targetPath) {
                   type: "list",
                   name: "packageManager",
                   message: "Which package manager do you want to use?",
-                  choices: ["npm", "yarn", "pnpm"],
+                  choices: ["npm", "pnpm", "yarn"],
                   default: "npm",
             },
       ]);
