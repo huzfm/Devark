@@ -9,10 +9,10 @@ import { installDepsWithChoice } from "../../utils/packageManager.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default async function runNodeMongoGenerator(targetPath) {
-      console.log("\x1b[1m\x1b[32m🚀 Setting up Node.js + MongoDB project...\x1b[0m");
+export default async function runNodePostgresGenerator(targetPath) {
+      console.log("\x1b[1m\x1b[32m🚀 Setting up Node.js + PostgreSQL + Prisma project...\x1b[0m");
 
-      // Ask user for package manager instead of auto-detect
+      // Ask user for package manager
       const { packageManager } = await inquirer.prompt([
             {
                   type: "list",
@@ -24,7 +24,7 @@ export default async function runNodeMongoGenerator(targetPath) {
       ]);
 
       // Ensure required folders exist
-      const folders = ["models", "routes", "controllers"];
+      const folders = ["prisma", "routes", "controllers"];
       folders.forEach((folder) => ensureDir(path.join(targetPath, folder)));
 
       // Templates directory
@@ -35,8 +35,10 @@ export default async function runNodeMongoGenerator(targetPath) {
       renderTemplate(path.join(templatesDir, ".env.example"), path.join(targetPath, ".env.example"), {});
       renderTemplate(path.join(templatesDir, "package.json.ejs"), path.join(targetPath, "package.json"), {});
 
-      // MVC boilerplate
-      renderTemplate(path.join(templatesDir, "models/User.ejs"), path.join(targetPath, "models/User.js"), {});
+      // Prisma schema
+      renderTemplate(path.join(templatesDir, "schema.prisma.ejs"), path.join(targetPath, "prisma/schema.prisma"), {});
+
+      // Example MVC boilerplate
       renderTemplate(path.join(templatesDir, "routes/userRoutes.ejs"), path.join(targetPath, "routes/userRoutes.js"), {});
       renderTemplate(
             path.join(templatesDir, "controllers/userController.ejs"),
@@ -48,13 +50,18 @@ export default async function runNodeMongoGenerator(targetPath) {
       renderTemplate(path.join(templatesDir, "Instructions.ejs"), path.join(targetPath, "Instructions.md"), {});
 
       // Install dependencies
-      const deps = ["express", "mongoose", "morgan", "dotenv", "nodemon"];
-      await installDepsWithChoice(targetPath, deps, packageManager);
-
+      const deps = ["express", "@prisma/client", "dotenv", "morgan", "nodemon"];
+      const devDeps = ["prisma"];
+      await installDepsWithChoice(targetPath, deps, packageManager, false);
+      await installDepsWithChoice(targetPath, devDeps, packageManager, true);
 
 
       console.log(
-            "\x1b[1m\x1b[32m✅ Node.js + MongoDB project setup completed!\x1b[0m\n" +
+            "\x1b[1m\x1b[32m✅ Node.js + PostgreSQL + Prisma project setup completed!\x1b[0m\n" +
             "📄 Please read the Instructions.md file for help on how to run and use your project."
       );
+
+      console.log("run \n npx prisma generate")
+      console.log("run \n npx prisma migrate dev --name init")
+
 }
