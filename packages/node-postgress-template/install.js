@@ -61,7 +61,21 @@ export default async function runNodePostgresGenerator(targetPath) {
             "📄 Please read the Instructions.md file for help on how to run and use your project."
       );
 
-      console.log("run \n npx prisma generate")
-      console.log("run \n npx prisma migrate dev --name init")
+      console.log(
+            "\x1b[1m\x1b[32m✅ Run the following commands:\x1b[0m\n"
+      );
+
+      console.log(
+            "\x1b[36m npx prisma generate\x1b[0m"
+      );
+
+      console.log(
+            "\x1b[36m npx prisma migrate dev --name init\x1b[0m\n"
+      );
+
+      console.log(
+            "\x1b[33m Once done, you're all set! \x1b[0m"
+      );
+
 
 }
