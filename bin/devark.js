@@ -10,7 +10,9 @@ import addOtp from '../packages/resend-otp/install.js';
 import addGithubOAuth from '../packages/github-oauth/install.js';
 import nodemongo from '../packages/node-mongodb-template/install.js';
 import nodepostgres from '../packages/node-postgress-template/install.js';
+import jwt from "../packages/jwt/install.js"
 import { showDevarkLogo } from '../utils/logo.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -60,6 +62,9 @@ async function main() {
             break;
           case 'node-postgres':
             await nodepostgres(process.cwd());
+            break;
+          case "jwt":
+            await jwt(process.cwd())
             break;
           default:
             throw new Error(`Template "${template}" is not supported`);
