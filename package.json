@@ -1,6 +1,6 @@
 {
   "name": "devark",
-  "version": "1.6.1",
+  "version": "1.0.0",
   "description": "CLI tool to scaffold backend features like authentications, authorizations, and more.",
   "main": "index.js",
   "type": "module",
@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node ./bin/devark.js",
-    "prepare": "pnpm husky install"
+    "prepare": "pnpm husky install",
+    "lazycommit": "node ./scripts/lazycommit-with-hooks.js"
   },
   "keywords": [
     "backend",
