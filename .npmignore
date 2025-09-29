@@ -1,0 +1,36 @@
+# Source files (don’t ship raw dev source unless needed)
+src/
+tests/
+__tests__/
+coverage/
+examples/
+docs/
+
+# Build and dev artifacts
+node_modules/
+dist-ssr/
+.vscode/
+*.log
+*.cache
+*.tsbuildinfo
+
+# Configs not needed in published package
+.env
+*.env.*
+Dockerfile
+docker-compose.yml
+babel.config.js
+tsconfig.json
+tsconfig.*.json
+eslint*
+.prettier*
+jest.config.js
+*.spec.js
+*.test.js
+
+# Git-related
+.git
+.gitignore
+.github/
+.gitattributes
+.husky
