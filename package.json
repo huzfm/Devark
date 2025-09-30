@@ -9,8 +9,7 @@
   },
   "scripts": {
     "start": "node ./bin/devark.js",
-    "prepare": "pnpm husky install",
-    "lazycommit": "node ./scripts/lazycommit-with-hooks.js"
+    "prepare": "pnpm husky install"
   },
   "keywords": [
     "backend",

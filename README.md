@@ -56,7 +56,7 @@ devark add resend-otp
     ├── bin/                  # CLI entry
     │   └── devark.ts
     ├── packages/              # Feature modules
-    │   ├── Google-Ooauth/
+    │   ├── Google-oauth/
     │   ├── resend-otp/
     │   └── Github-Oauth/
     ├── utils/                # Shared utilities

@@ -5,8 +5,7 @@ import inquirer from "inquirer";
 import { injectEnvVars } from "../../utils/injectEnvVars.js";
 import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup.js";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
-import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
-import { isValidNodeProject } from "../../utils/packageManager.js";
+import { detectPackageManager, installDependencies, isValidNodeProject } from "../../utils/packageManager.js";
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
