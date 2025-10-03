@@ -29,7 +29,7 @@ export function installDependencies(targetPath, dependencies) {
             pnpm: `pnpm add ${dependencies.join(' ')}`,
       };
 
-      console.log(`📦 Installing dependencies using ${packageManager}...`);
+      console.log(`📦 Installing dependencies using \x1b[1m\x1b[36m${packageManager}\x1b[0m`);
       execSync(commands[packageManager], { cwd: targetPath, stdio: 'inherit' });
 }
 
@@ -67,4 +67,13 @@ export async function installDepsWithChoice(targetPath, dependencies, packageMan
       execSync(commands[packageManager], { cwd: targetPath, stdio: "inherit" });
       console.log("✅ Dependencies installed successfully!");
       return true;
+}
+
+
+export function detectPackageManagerByCommnad(targetPath) {
+      const ua = process.env.npm_config_user_agent || "";
+      if (ua.startsWith("yarn")) return "yarn";
+      if (ua.startsWith("pnpm")) return "pnpm";
+      if (ua.startsWith("npm")) return "npm";
+      return "npm";
 }

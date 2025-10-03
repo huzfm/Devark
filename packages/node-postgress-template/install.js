@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import inquirer from "inquirer";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
 import { installDepsWithChoice } from "../../utils/packageManager.js";
-
+import { detectPackageManagerByCommnad } from "../../utils/packageManager.js";
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,16 +12,11 @@ const __dirname = path.dirname(__filename);
 export default async function runNodePostgresGenerator(targetPath) {
       console.log("\x1b[1m\x1b[32m🚀 Setting up Node.js + PostgreSQL + Prisma project...\x1b[0m");
 
-      // Ask user for package manager
-      const { packageManager } = await inquirer.prompt([
-            {
-                  type: "list",
-                  name: "packageManager",
-                  message: "Which package manager do you want to use?",
-                  choices: ["npm", "pnpm", "yarn"],
-                  default: "npm",
-            },
-      ]);
+
+      //detect package manager from command
+      const packageManager = detectPackageManagerByCommnad();
+      console.log(`📦 Using package manager: ${packageManager}`);
+
 
       // Ensure required folders exist
       const folders = ["prisma", "routes", "controllers"];
@@ -32,7 +27,7 @@ export default async function runNodePostgresGenerator(targetPath) {
 
       // Core files
       renderTemplate(path.join(templatesDir, "app.ejs"), path.join(targetPath, "app.js"), {});
-      renderTemplate(path.join(templatesDir, ".env.example"), path.join(targetPath, ".env.example"), {});
+      renderTemplate(path.join(templatesDir, "env.example.ejs"), path.join(targetPath, ".env.example"), {});
       renderTemplate(path.join(templatesDir, "package.json.ejs"), path.join(targetPath, "package.json"), {});
 
       // Prisma schema
