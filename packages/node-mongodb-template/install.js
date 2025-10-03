@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import inquirer from "inquirer";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
 import { installDepsWithChoice } from "../../utils/packageManager.js";
+import { detectPackageManagerByCommnad } from "../../utils/packageManager.js";
 
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
@@ -13,15 +14,9 @@ export default async function runNodeMongoGenerator(targetPath) {
       console.log("\x1b[1m\x1b[32m🚀 Setting up Node.js + MongoDB project...\x1b[0m");
 
       // Ask user for package manager instead of auto-detect
-      const { packageManager } = await inquirer.prompt([
-            {
-                  type: "list",
-                  name: "packageManager",
-                  message: "Which package manager do you want to use?",
-                  choices: ["npm", "pnpm", "yarn"],
-                  default: "npm",
-            },
-      ]);
+
+      const packageManager = detectPackageManagerByCommnad();
+      console.log(`📦 Using package manager \x1b[1m\x1b[36m${packageManager}\x1b[0m`);
 
       // Ensure required folders exist
       const folders = ["models", "routes", "controllers"];
@@ -32,7 +27,7 @@ export default async function runNodeMongoGenerator(targetPath) {
 
       // Core files
       renderTemplate(path.join(templatesDir, "app.ejs"), path.join(targetPath, "app.js"), {});
-      renderTemplate(path.join(templatesDir, ".env.example"), path.join(targetPath, ".env.example"), {});
+      renderTemplate(path.join(templatesDir, "env.example.ejs"), path.join(targetPath, ".env.example"), {});
       renderTemplate(path.join(templatesDir, "package.json.ejs"), path.join(targetPath, "package.json"), {});
 
       // MVC boilerplate
