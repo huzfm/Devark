@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { readFileSync, existsSync } from 'fs';
 import path from 'path';
@@ -13,7 +12,8 @@ import nodepostgres from '../packages/node-postgress-template/install';
 import { showDevarkLogo } from '../utils/logo';
 
 
-const __filename = import.meta.url ? fileURLToPath(import.meta.url) : process.argv[1];
+// Use require.resolve for CommonJS compatibility
+const __filename = process.argv[1];
 const __dirname = dirname(__filename);
 
 // Try multiple possible locations for package.json
@@ -26,8 +26,8 @@ const possiblePaths = [
 
 for (const possiblePath of possiblePaths) {
   if (existsSync(possiblePath)) {
-    packageJsonPath = possiblePath;
-    break;
+  packageJsonPath = possiblePath;
+  break;
   }
 }
 
@@ -68,29 +68,29 @@ async function main() {
 
       try {
         switch (input) {
-          case 'google-oauth':
-            await addOAuth(process.cwd());
-            break;
-          case 'resend-otp':
-            await addOtp(process.cwd());
-            break;
-          case 'github-oauth':
-            await addGithubOAuth(process.cwd());
-            break;
-          case 'node-mongo':
-            await nodemongo(process.cwd());
-            break;
-          case 'node-postgres':
-            await nodepostgres(process.cwd());
-            break;
-          default:
-            throw new Error(`Template "${template}" is not supported`);
+      case 'google-oauth':
+        await addOAuth(process.cwd());
+        break;
+      case 'resend-otp':
+        await addOtp(process.cwd());
+        break;
+      case 'github-oauth':
+        await addGithubOAuth(process.cwd());
+        break;
+      case 'node-mongo':
+        await nodemongo(process.cwd());
+        break;
+      case 'node-postgres':
+        await nodepostgres(process.cwd());
+        break;
+      default:
+        throw new Error(`Template "${template}" is not supported`);
         }
       } catch (err) {
         if (err instanceof Error && (err as any).isTtyError || (err instanceof Error && err.message.includes('force closed'))) {
-          console.log('\n Installation aborted.');
+      console.log('\n Installation aborted.');
         } else {
-          console.error(' Error:', err instanceof Error ? err.message : String(err));
+      console.error(' Error:', err instanceof Error ? err.message : String(err));
         }
         process.exit(1);
       }
@@ -102,20 +102,20 @@ async function main() {
     .description('Show all available Devark commands and modules')
     .action(() => {
       console.log(`
-📌 Devark CLI - Available Commands
+        📌 Devark CLI - Available Commands
 
-  npx devark add <module>    Add a backend module into your project
+          npx devark add <module>    Add a backend module into your project
 
-✅ Supported Modules:
-  - google-oauth    → Google authentication
-  - github-oauth    → GitHub authentication
-  - resend-otp      → OTP via Resend email
+        ✅ Supported Modules:
+          - google-oauth    → Google authentication
+          - github-oauth    → GitHub authentication
+          - resend-otp      → OTP via Resend email
 
-💡 Examples:
- npx devark add google-oauth
- npx devark add github-oauth
- npx devark add resend-otp
-`);
+        💡 Examples:
+        npx devark add google-oauth
+        npx devark add github-oauth
+        npx devark add resend-otp
+        `);
     });
 
   // Default help if no args
