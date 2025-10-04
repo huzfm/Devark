@@ -108,19 +108,23 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
 
 ## 📂 Folder Structure (Google OAuth Module)
 
-Each OAuth feature is self-contained:
+Each OAuth feature is self-contained in the TypeScript source:
 
 ```
-modules/
-  └── google-oauth/
-      ├── templates/
-      │   └── authRoute.ejs
-      ├── install.js
-      └── ensureAppJsHasOAuthSetup.js
+src/packages/google-oauth/
+  ├── install.ts                    # Main module installation logic
+  ├── utils/
+  │   └── ensureAppJsHasOAuthSetup.ts  # Patches app.js with Google OAuth
+  └── templates/
+      ├── config/
+      │   └── googleStrategy.ejs    # Passport Google strategy template
+      └── routes/
+          └── googleRoutes.ejs     # Google OAuth routes template
 ```
 
-- **install.js** → Entry point for feature setup
-- **ensureAppJsHasOAuthSetup.js** → Patches existing `app.js` with Google OAuth logic
+- **install.ts** → Entry point for feature setup (TypeScript)
+- **ensureAppJsHasOAuthSetup.ts** → Patches existing `app.js` with Google OAuth logic
+- **templates/** → EJS templates for generated files
 
 ---
 
