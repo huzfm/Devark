@@ -1,7 +1,7 @@
 import path from "path";
-import { ensureDir, renderTemplate } from "../../utils/filePaths";
-import { installDepsWithChoice } from "../../utils/packageManager";
-import { detectPackageManagerByCommnad } from "../../utils/packageManager";
+import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { installDepsWithChoice } from "../../utils/packageManager.js";
+import { detectPackageManagerByCommnad } from "../../utils/packageManager.js";
 
 // __dirname workaround
 // Use process.argv[1] for CommonJS compatibility

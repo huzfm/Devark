@@ -4,12 +4,12 @@ import { Command } from 'commander';
 import { dirname } from 'path';
 import { readFileSync, existsSync } from 'fs';
 import path from 'path';
-import addOAuth from '../packages/google-oauth/install';
-import addOtp from '../packages/resend-otp/install';
-import addGithubOAuth from '../packages/github-oauth/install';
-import nodemongo from '../packages/node-mongodb-template/install';
-import nodepostgres from '../packages/node-postgress-template/install';
-import { showDevarkLogo } from '../utils/logo';
+import addOAuth from '../packages/google-oauth/install.js';
+import addOtp from '../packages/resend-otp/install.js';
+import addGithubOAuth from '../packages/github-oauth/install.js';
+import nodemongo from '../packages/node-mongodb-template/install.js';
+import nodepostgres from '../packages/node-postgress-template/install.js';
+import { showDevarkLogo } from '../utils/logo.js';
 
 
 // Use require.resolve for CommonJS compatibility

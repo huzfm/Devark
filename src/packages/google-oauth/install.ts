@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
 import inquirer from "inquirer";
-import { injectEnvVars } from "../../utils/injectEnvVars";
-import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup";
-import { ensureDir, renderTemplate } from "../../utils/filePaths";
-import { detectPackageManager, installDependencies } from "../../utils/packageManager";
-import { isValidNodeProject } from "../../utils/packageManager";
+import { injectEnvVars } from "../../utils/injectEnvVars.js";
+import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup.js";
+import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
+import { isValidNodeProject } from "../../utils/packageManager.js";
 
 // __dirname workaround
 // Use process.argv[1] for CommonJS compatibility
@@ -34,10 +34,10 @@ export default async function installGoogleOAuth(targetPath: string) {
   //  First prompt only for entry file
   const { entryFile } = await inquirer.prompt([
     {
-    type: "input",
-    name: "entryFile",
-    message: "What is your entry file? (e.g., app.js , index.js , server.js)",
-    default: "app.js",
+      type: "input",
+      name: "entryFile",
+      message: "What is your entry file? (e.g., app.js , index.js , server.js)",
+      default: "app.js",
     },
   ]);
 

@@ -1,10 +1,10 @@
 import fs from "fs";
 import path from "path";
 import inquirer from "inquirer";
-import { injectEnvVars } from "../../utils/injectEnvVars";
-import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup";
-import { ensureDir, renderTemplate } from "../../utils/filePaths";
-import { detectPackageManager, installDependencies, isValidNodeProject } from "../../utils/packageManager";
+import { injectEnvVars } from "../../utils/injectEnvVars.js";
+import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup.js";
+import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { detectPackageManager, installDependencies, isValidNodeProject } from "../../utils/packageManager.js";
 // __dirname workaround
 // Use process.argv[1] for CommonJS compatibility
 const __filename = process.argv[1];
