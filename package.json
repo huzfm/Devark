@@ -5,13 +5,13 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "devark": "dist/bin/devark.cjs"
+    "devark": "dist/bin/devark.js"
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "tsup src/bin/devark.ts --format cjs --target node18 --dts --out-dir dist --clean && mkdir -p dist/bin && cp dist/devark.cjs dist/bin/devark.cjs",
-    "build:watch": "tsup src/bin/devark.ts --watch --out-dir dist --format cjs",
-    "start": "node dist/bin/devark.cjs",
+    "build": "tsup src/bin/devark.ts --format esm --target node18 --dts --out-dir dist --clean && mkdir -p dist/bin && cp dist/devark.js dist/bin/devark.js",
+    "build:watch": "tsup src/bin/devark.ts --watch --out-dir dist --format esm",
+    "start": "node dist/bin/devark.js",
     "dev": "ts-node --esm src/bin/devark.ts",
     "lint": "eslint . --ext .ts,.js"
   },
@@ -47,7 +47,6 @@
   "devDependencies": {
     "@eslint/js": "^9.34.0",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
-    "@types/ejs": "^3.1.5",
     "@types/node": "^24.6.2",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",

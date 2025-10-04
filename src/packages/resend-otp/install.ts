@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
-import inquirer from "inquirer";
-import { injectEnvVars } from "../../utils/injectEnvVars";
-import { ensureDir, renderTemplate } from "../../utils/filePaths";
-import { detectPackageManager, installDependencies } from "../../utils/packageManager";
-import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup";
-import { isValidNodeProject } from "../../utils/packageManager";
+import * as inquirer from "inquirer";
+import { injectEnvVars } from "../../utils/injectEnvVars.js";
+import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
+import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup.js";
+import { isValidNodeProject } from "../../utils/packageManager.js";
 // __dirname workaround
 // Use process.argv[1] for CommonJS compatibility
 const __filename = process.argv[1];
@@ -26,7 +26,7 @@ export default async function installOtp(targetPath: string) {
     return;
   }
   // ✅ Prompt entry file first
-  const { entryFile } = await inquirer.prompt([
+  const { entryFile } = await inquirer.default.prompt([
     {
     type: "input",
     name: "entryFile",
@@ -42,7 +42,7 @@ export default async function installOtp(targetPath: string) {
   }
 
   // ✅ Prompt for env vars
-  const { apiKey, fromEmail } = await inquirer.prompt([
+  const { apiKey, fromEmail } = await inquirer.default.prompt([
     {
     type: "input",
     name: "apiKey",
@@ -93,7 +93,5 @@ export default async function installOtp(targetPath: string) {
   );
 
   console.log("📂 OTP controller & routes created!");
-
-
   console.log("✅ Resend OTP setup complete!");
 }
