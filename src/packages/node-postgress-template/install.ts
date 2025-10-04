@@ -2,11 +2,11 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import inquirer from "inquirer";
-import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
-import { installDepsWithChoice } from "../../utils/packageManager.js";
-import { detectPackageManagerByCommnad } from "../../utils/packageManager.js";
+import { ensureDir, renderTemplate } from "../../utils/filePaths";
+import { installDepsWithChoice } from "../../utils/packageManager";
+import { detectPackageManagerByCommnad } from "../../utils/packageManager";
 // __dirname workaround
-const __filename = fileURLToPath(import.meta.url);
+const __filename = import.meta.url ? fileURLToPath(import.meta.url) : process.argv[1];
 const __dirname = path.dirname(__filename);
 
 export default async function runNodePostgresGenerator(targetPath) {

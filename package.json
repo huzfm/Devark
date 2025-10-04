@@ -5,11 +5,15 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "devark": "bin/devark.js"
+    "devark": "dist/bin/devark.cjs"
   },
   "scripts": {
-    "start": "node ./bin/devark.js",
-    "prepare": "pnpm husky install"
+    "clean": "rimraf dist",
+    "build": "tsup src/bin/devark.ts --format cjs --target node18 --dts --out-dir dist --clean && mkdir -p dist/bin && cp dist/devark.cjs dist/bin/devark.cjs",
+    "build:watch": "tsup src/bin/devark.ts --watch --out-dir dist --format cjs",
+    "start": "node dist/bin/devark.cjs",
+    "dev": "ts-node --esm src/bin/devark.ts",
+    "lint": "eslint . --ext .ts,.js"
   },
   "keywords": [
     "backend",
@@ -29,6 +33,7 @@
     "express": "^5.1.0",
     "figlet": "^1.8.2",
     "fs-extra": "^11.3.0",
+    "gradient-string": "^3.0.0",
     "inquirer": "^12.9.0"
   },
   "repository": {
@@ -42,6 +47,9 @@
   "devDependencies": {
     "@eslint/js": "^9.34.0",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
+    "@types/node": "^24.6.2",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
     "cross-env": "^10.0.0",
     "eslint": "^9.34.0",
     "eslint-config-prettier": "^10.1.8",
@@ -51,7 +59,12 @@
     "husky": "^8.0.3",
     "lazycommit": "^4.1.19",
     "lint-staged": "^16.1.5",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
   },
   "lint-staged": {
     "*.js": "eslint --fix"

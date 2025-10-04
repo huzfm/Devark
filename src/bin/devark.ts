@@ -3,19 +3,40 @@
 import { Command } from 'commander';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import path from 'path';
-import addOAuth from '../packages/google-oauth/install.js';
-import addOtp from '../packages/resend-otp/install.js';
-import addGithubOAuth from '../packages/github-oauth/install.js';
-import nodemongo from '../packages/node-mongodb-template/install.js';
-import nodepostgres from '../packages/node-postgress-template/install.js';
-import { showDevarkLogo } from '../utils/logo.js';
+import addOAuth from '../packages/google-oauth/install';
+import addOtp from '../packages/resend-otp/install';
+import addGithubOAuth from '../packages/github-oauth/install';
+import nodemongo from '../packages/node-mongodb-template/install';
+import nodepostgres from '../packages/node-postgress-template/install';
+import { showDevarkLogo } from '../utils/logo';
 
 
-const __filename = fileURLToPath(import.meta.url);
+const __filename = import.meta.url ? fileURLToPath(import.meta.url) : process.argv[1];
 const __dirname = dirname(__filename);
-const packageJson = JSON.parse(readFileSync(path.join(__dirname, '../package.json'), 'utf-8')); ``
+
+// Try multiple possible locations for package.json
+let packageJsonPath;
+const possiblePaths = [
+  path.join(__dirname, '../../package.json'),
+  path.join(__dirname, '../package.json'),
+  path.join(process.cwd(), 'package.json')
+];
+
+for (const possiblePath of possiblePaths) {
+  if (existsSync(possiblePath)) {
+    packageJsonPath = possiblePath;
+    break;
+  }
+}
+
+if (!packageJsonPath) {
+  console.error('❌ Could not find package.json');
+  process.exit(1);
+}
+
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
 const program = new Command();
 
@@ -66,10 +87,10 @@ async function main() {
             throw new Error(`Template "${template}" is not supported`);
         }
       } catch (err) {
-        if (err.isTtyError || err.message.includes('force closed')) {
+        if (err instanceof Error && (err as any).isTtyError || (err instanceof Error && err.message.includes('force closed'))) {
           console.log('\n Installation aborted.');
         } else {
-          console.error(' Error:', err.message);
+          console.error(' Error:', err instanceof Error ? err.message : String(err));
         }
         process.exit(1);
       }
