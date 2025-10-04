@@ -2,13 +2,13 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import inquirer from "inquirer";
-import { injectEnvVars } from "../../utils/injectEnvVars.js";
-import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
-import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
-import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup.js";
-import { isValidNodeProject } from "../../utils/packageManager.js";
+import { injectEnvVars } from "../../utils/injectEnvVars";
+import { ensureDir, renderTemplate } from "../../utils/filePaths";
+import { detectPackageManager, installDependencies } from "../../utils/packageManager";
+import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup";
+import { isValidNodeProject } from "../../utils/packageManager";
 // __dirname workaround
-const __filename = fileURLToPath(import.meta.url);
+const __filename = import.meta.url ? fileURLToPath(import.meta.url) : process.argv[1];
 const __dirname = path.dirname(__filename);
 
 export default async function installOtp(targetPath) {

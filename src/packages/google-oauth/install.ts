@@ -2,21 +2,27 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import inquirer from "inquirer";
-import { injectEnvVars } from "../../utils/injectEnvVars.js";
-import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup.js";
-import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
-import { detectPackageManager, installDependencies, isValidNodeProject } from "../../utils/packageManager.js";
+import { injectEnvVars } from "../../utils/injectEnvVars";
+import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup";
+import { ensureDir, renderTemplate } from "../../utils/filePaths";
+import { detectPackageManager, installDependencies } from "../../utils/packageManager";
+import { isValidNodeProject } from "../../utils/packageManager";
+
 // __dirname workaround
-const __filename = fileURLToPath(import.meta.url);
+const __filename = import.meta.url ? fileURLToPath(import.meta.url) : process.argv[1];
 const __dirname = path.dirname(__filename);
 
-export default async function installGithubOAuth(targetPath) {
+
+
+
+export default async function installGoogleOAuth(targetPath) {
       if (!isValidNodeProject(targetPath)) {
             console.error("❌ The folder does not contain a valid Node.js project (missing or invalid package.json). Aborting installation.");
             return;
       }
-      console.log('\x1b[1m\x1b[32mInstalling GitHub OAuth to your project. Please read the instructions carefully.\x1b[0m');
+      console.log('\x1b[1m\x1b[32mInstalling Google OAuth to your project. Please read the instructions carefully.\x1b[0m');
       const packageManager = detectPackageManager(targetPath);
+
 
       if (packageManager) {
             console.log(`${packageManager} detected as package manager. Installing dependencies...`);
@@ -24,9 +30,11 @@ export default async function installGithubOAuth(targetPath) {
       else {
             console.error(
                   "❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually:"
+            );
 
-            )
+            return;
       }
+
 
 
       //  First prompt only for entry file
@@ -51,37 +59,38 @@ export default async function installGithubOAuth(targetPath) {
             {
                   type: "input",
                   name: "clientID",
-                  message: "Enter your GitHub OAuth Client ID:",
+                  message: "Enter your Google OAuth Client ID:",
             },
             {
                   type: "input",
                   name: "clientSecret",
-                  message: "Enter your GitHub OAuth Client Secret:",
+                  message: "Enter your Google OAuth Client Secret:",
             },
       ]);
 
       //  Inject into .env
       injectEnvVars(targetPath, {
-            GITHUB_CLIENT_ID: clientID,
-            GITHUB_CLIENT_SECRET: clientSecret,
-            GITHUB_CALLBACK_URL: callbackURL,
+            GOOGLE_CLIENT_ID: clientID,
+            GOOGLE_CLIENT_SECRET: clientSecret,
+            GOOGLE_CALLBACK_URL: callbackURL,
       });
 
 
-      const deps = ["passport", 'passport-github2', "express-session", "dotenv"];
+      const deps = ["passport", 'passport-google-oauth20', "express-session", "dotenv"];
       installDependencies(targetPath, deps);
+
       //  Patch entry file
       ensureAppJsHasOAuthSetup(entryFilePath);
 
       //  Copy EJS templates → project files
       const templatesDir = path.join(__dirname, "templates");
 
-      // config/githubStrategy.js
+      // config/GoogleStrategy.js
       const configDir = path.join(targetPath, "config");
       ensureDir(configDir);
       renderTemplate(
-            path.join(templatesDir, "config", "githubStrategy.ejs"),
-            path.join(configDir, "githubStrategy.js"),
+            path.join(templatesDir, "config", "googleStrategy.ejs"),
+            path.join(configDir, "googleStrategy.js"),
             { clientID, clientSecret, callbackURL }
       );
 
@@ -89,15 +98,15 @@ export default async function installGithubOAuth(targetPath) {
       const routesDir = path.join(targetPath, "routes");
       ensureDir(routesDir);
       renderTemplate(
-            path.join(templatesDir, "routes", "githubRoutes.ejs"),
-            path.join(routesDir, "githubRoutes.js"),
+            path.join(templatesDir, "routes", "googleRoutes.ejs"),
+            path.join(routesDir, "googleRoutes.js"),
             {}
       );
 
       console.log("📂 OAuth config & routes created!");
 
-      //  Install dependencies
 
 
-      console.log("✅ GitHub OAuth setup complete!");
+
+      console.log("✅ Google OAuth setup complete!");
 }
