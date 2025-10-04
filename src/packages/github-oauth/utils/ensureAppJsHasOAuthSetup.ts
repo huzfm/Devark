@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 
 const requiredImports = [
   `import 'dotenv/config'`,
@@ -22,7 +21,7 @@ const requiredMiddleware = [
   `app.use('/',githubRoutes)`,
 ];
 
-export async function ensureAppJsHasOAuthSetup(appJsPath) {
+export async function ensureAppJsHasOAuthSetup(appJsPath: string) {
   if (!fs.existsSync(appJsPath) || !fs.lstatSync(appJsPath).isFile()) {
     throw new Error(`❌ Provided path is not a file: ${appJsPath}`);
   }
@@ -40,7 +39,7 @@ export async function ensureAppJsHasOAuthSetup(appJsPath) {
 
   // Ensure app = express() exists
   const appLineIndex = lines.findIndex((line) =>
-    /(?:const|let|var)\s+app\s*=\s*express\s*\(\)/.test(line),
+    /(?:const|let|var)\s+app\s*=\s*express\s*\(\)/.test(line)
   );
 
   if (appLineIndex === -1) {
@@ -48,7 +47,7 @@ export async function ensureAppJsHasOAuthSetup(appJsPath) {
   }
 
   const finalAppLineIndex = lines.findIndex((line) =>
-    /(?:const|let|var)\s+app\s*=\s*express\s*\(\)/.test(line),
+    /(?:const|let|var)\s+app\s*=\s*express\s*\(\)/.test(line)
   );
 
   // Remove old middleware lines (to reinsert in correct order)
@@ -58,11 +57,8 @@ export async function ensureAppJsHasOAuthSetup(appJsPath) {
     'app.use(passport.session()',
     'app.use(authRoutes',
   ];
-  lines = lines.filter(
-    (line) =>
-      !middlewareKeywords.some((keyword) =>
-        line.trim().startsWith(keyword),
-      ),
+  lines = lines.filter((line) =>
+    !middlewareKeywords.some((keyword) => line.trim().startsWith(keyword))
   );
 
   // Insert all middlewares in correct order after app = express()

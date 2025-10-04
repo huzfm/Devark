@@ -123,14 +123,14 @@ FROM_EMAIL=admin@example.com
 ## 📂 Module Folder Structure
 
 ```
-packages/
-  └── otp/
-      ├── templates/
-      │   ├── controllers/
-      │   │   └── otp-functions.ejs
-      │   └── routes/
-      │       └── otpRoutes.ejs
-      ├── install.js
+src/packages/resend-otp/
+  ├── install.ts                    # Main module installation logic
+  ├── utils/
+  │   └── ensureAppJsHasOtpSetup.ts # Patches app.js with OTP routes
+  └── templates/
+      ├── otp.ejs                   # OTP controller template
+      ├── otpFunctions.ejs          # OTP utility functions
+      └── otpRoutes.ejs             # OTP routes template
 ```
 
 ---

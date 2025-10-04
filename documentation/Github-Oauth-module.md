@@ -110,31 +110,35 @@ GITHUB_CALLBACK_URL=http://localhost:3000/auth/github/callback
 
 ## 📂 Folder Structure (GitHub OAuth Module)
 
-Each OAuth feature is self-contained:
+Each OAuth feature is self-contained in the TypeScript source:
 
 ```
-modules/
-  └── github-oauth/
-      ├── templates/
-      │   └── authRoute.ejs
-      ├── install.js
-      └── ensureAppJsHasOAuthSetup.js
+src/packages/github-oauth/
+  ├── install.ts                    # Main module installation logic
+  ├── utils/
+  │   └── ensureAppJsHasOAuthSetup.ts  # Patches app.js with GitHub OAuth
+  └── templates/
+      ├── config/
+      │   └── githubStrategy.ejs    # Passport GitHub strategy template
+      └── routes/
+          └── githubRoutes.ejs     # GitHub OAuth routes template
 ```
 
-- **install.js** → Entry point for feature setup
-- **ensureAppJsHasOAuthSetup.js** → Patches existing `app.js` with GitHub OAuth logic
+- **install.ts** → Entry point for feature setup (TypeScript)
+- **ensureAppJsHasOAuthSetup.ts** → Patches existing `app.js` with GitHub OAuth logic
+- **templates/** → EJS templates for generated files
 
 ---
 
 ## 🔄 GitHub OAuth Setup Workflow
 
-| Step | Purpose                           | Tools Used               |
-| ---- | --------------------------------- | ------------------------ |
-| 1️⃣   | Setup / Validate files            | `fs`, `path`             |
-| 2️⃣   | Patch `app.js` with GitHub OAuth  | regex, string checks     |
-| 3️⃣   | Install deps (`passport-github2`) | `child_process.execSync` |
-| 4️⃣   | Add GitHub OAuth route templates  | `fs.copyFileSync`        |
-| 5️⃣   | Update `.env`, `package.json`     | string, JSON             |
+| Step | Purpose                           | Tools Used               | TypeScript Implementation |
+| ---- | --------------------------------- | ------------------------ | ------------------------- |
+| 1️⃣   | Setup / Validate files            | `fs`, `path`             | `isValidNodeProject()`    |
+| 2️⃣   | Patch `app.js` with GitHub OAuth  | regex, string checks     | `ensureAppJsHasOAuthSetup()` |
+| 3️⃣   | Install deps (`passport-github2`) | `child_process.execSync` | `installDependencies()`   |
+| 4️⃣   | Add GitHub OAuth route templates  | `fs.copyFileSync`        | `renderTemplate()`        |
+| 5️⃣   | Update `.env`, `package.json`     | string, JSON             | `injectEnvVars()`         |
 
 ---
 
