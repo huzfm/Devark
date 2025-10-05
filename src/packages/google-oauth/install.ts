@@ -3,7 +3,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { injectEnvVars } from "../../utils/injectEnvVars.js";
 import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup.js";
-import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { ensureDir, renderTemplate, getTemplatesDir } from "../../utils/filePaths.js";
 import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
 import { isValidNodeProject } from "../../utils/packageManager.js";
 
@@ -81,7 +81,7 @@ export default async function installGoogleOAuth(targetPath: string) {
   ensureAppJsHasOAuthSetup(entryFilePath);
 
   //  Copy EJS templates → project files
-  const templatesDir = path.join(__dirname, "templates");
+  const templatesDir = getTemplatesDir("google-oauth");
 
   // config/GoogleStrategy.js
   const configDir = path.join(targetPath, "config");

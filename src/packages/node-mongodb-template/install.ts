@@ -1,5 +1,5 @@
 import path from "path";
-import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { ensureDir, renderTemplate, getTemplatesDir } from "../../utils/filePaths.js";
 import { installDepsWithChoice } from "../../utils/packageManager.js";
 import { detectPackageManagerByCommnad } from "../../utils/packageManager.js";
 
@@ -20,7 +20,7 @@ export default async function runNodeMongoGenerator(targetPath: string) {
   folders.forEach((folder) => ensureDir(path.join(targetPath, folder)));
 
   // Templates directory
-  const templatesDir = path.join(__dirname, "templates");
+  const templatesDir = getTemplatesDir("node-mongodb-template");
 
   // Core files
   renderTemplate(path.join(templatesDir, "app.ejs"), path.join(targetPath, "app.js"), {});

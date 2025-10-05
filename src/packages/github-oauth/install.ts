@@ -3,7 +3,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { injectEnvVars } from "../../utils/injectEnvVars.js";
 import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup.js";
-import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { ensureDir, renderTemplate, getTemplatesDir } from "../../utils/filePaths.js";
 import { detectPackageManager, installDependencies, isValidNodeProject } from "../../utils/packageManager.js";
 // __dirname workaround
 // Use process.argv[1] for CommonJS compatibility
@@ -77,7 +77,7 @@ export default async function installGithubOAuth(targetPath: string) {
   ensureAppJsHasOAuthSetup(entryFilePath);
 
   //  Copy EJS templates → project files
-  const templatesDir = path.join(__dirname, "templates");
+  const templatesDir = getTemplatesDir("github-oauth");
 
   // config/githubStrategy.js
   const configDir = path.join(targetPath, "config");
