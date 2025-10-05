@@ -9,7 +9,7 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "tsup src/bin/devark.ts --format esm --target node18 --dts --out-dir dist --clean && mkdir -p dist/bin && cp dist/devark.js dist/bin/devark.js",
+    "build": "./scripts/build.sh",
     "build:watch": "tsup src/bin/devark.ts --watch --out-dir dist --format esm",
     "start": "node dist/bin/devark.js",
     "dev": "ts-node --esm src/bin/devark.ts",

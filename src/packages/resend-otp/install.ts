@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import * as inquirer from "inquirer";
 import { injectEnvVars } from "../../utils/injectEnvVars.js";
-import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
+import { ensureDir, renderTemplate, getTemplatesDir } from "../../utils/filePaths.js";
 import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
 import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup.js";
 import { isValidNodeProject } from "../../utils/packageManager.js";
@@ -67,7 +67,7 @@ export default async function installOtp(targetPath: string) {
   ensureAppJsHasOtpSetup(entryFilePath);
 
   // ✅ Copy EJS templates → project files
-  const templatesDir = path.join(__dirname, "templates");
+  const templatesDir = getTemplatesDir("resend-otp");
 
   // controllers/otpController.js
   const controllersDir = path.join(targetPath, "controllers");
