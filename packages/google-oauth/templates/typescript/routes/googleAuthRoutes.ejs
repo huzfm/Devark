@@ -1,0 +1,9 @@
+import express, { Router } from "express";
+import { googleAuth, googleCallback } from "../controllers/googleAuthController";
+
+const router: Router = express.Router();
+
+router.get("/auth/google", googleAuth);
+router.get("/auth/google/callback", googleCallback);
+
+export default router;
