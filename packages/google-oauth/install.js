@@ -1,112 +1,140 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import inquirer from "inquirer";
-import { injectEnvVars } from "../../utils/injectEnvVars.js";
-import { ensureAppJsHasOAuthSetup } from "./utils/ensureAppJsHasOAuthSetup.js";
+import { fileURLToPath } from "url";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
-import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
-import { isValidNodeProject } from "../../utils/packageManager.js";
+import { installDepsWithChoice, isValidNodeProject, detectPackageManager } from "../../utils/packageManager.js";
+import { injectEnvVars } from "../../utils/injectEnvVars.js";
 
-// __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
-
-
-export default async function installGoogleOAuth(targetPath) {
+export default async function runGoogleOAuthGenerator(targetPath) {
+      // 1️⃣ Check for valid Node.js project
       if (!isValidNodeProject(targetPath)) {
             console.error("❌ The folder does not contain a valid Node.js project (missing or invalid package.json). Aborting installation.");
             return;
       }
-      console.log('\x1b[1m\x1b[32mInstalling Google OAuth to your project. Please read the instructions carefully.\x1b[0m');
+
+      // 2️⃣ Detect package manager
       const packageManager = detectPackageManager(targetPath);
-
-
       if (packageManager) {
-            console.log(`${packageManager} detected as package manager. Installing dependencies...`);
-      }
-      else {
-            console.error(
-                  "❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually:"
-            );
-
-            return;
+            console.log(`📦 ${packageManager} detected. Dependencies will be installed automatically.`);
+      } else {
+            console.error("❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually.");
       }
 
+      // 3️⃣ Ask user for JS/TS version
+      const { language } = await inquirer.prompt([
+            {
+                  type: "list",
+                  name: "language",
+                  message: "Which version do you want to add?",
+                  choices: ["JavaScript", "TypeScript"],
+                  default: "JavaScript",
+            },
+      ]);
 
+      // 4️⃣ Determine default entry file
+      const defaultEntry = language === "TypeScript" ? "src/app.ts" : "app.js";
 
-      //  First prompt only for entry file
-      const { entryFile } = await inquirer.prompt([
+      // 5️⃣ Ask user for entry file
+      let { entryFile } = await inquirer.prompt([
             {
                   type: "input",
                   name: "entryFile",
-                  message: "What is your entry file? (e.g., app.js , index.js , server.js)",
-                  default: "app.js",
+                  message: "Enter your project entry file (relative to project root):",
+                  default: defaultEntry,
             },
       ]);
 
-      //  Ensure entry file exists before asking anything else
-      const entryFilePath = path.join(targetPath, entryFile);
-      if (!fs.existsSync(entryFilePath)) {
-            console.error(`❌ Entry file ${entryFile} not found in ${targetPath}. Aborting installation.`);
+      let appPath = path.join(targetPath, entryFile);
+
+      // 6️⃣ TypeScript: auto-detect entry file in src/ if not found
+      if (language === "TypeScript" && !fs.existsSync(appPath)) {
+            const srcDir = path.join(targetPath, "src");
+            if (fs.existsSync(srcDir)) {
+                  const tsFiles = fs.readdirSync(srcDir).filter(f => f.endsWith(".ts"));
+                  if (tsFiles.length > 0) {
+                        entryFile = path.join("src", tsFiles[0]);
+                        appPath = path.join(targetPath, entryFile);
+                        console.log(`ℹ️ TypeScript entry file auto-detected: ${entryFile}`);
+                  }
+            }
+      }
+
+      // 7️⃣ Abort if entry file still does not exist
+      if (!fs.existsSync(appPath)) {
+            console.error(`❌ Entry file "${entryFile}" not found. Aborting installation.`);
             return;
       }
 
-      //  Now ask for secrets only if entry file exists
-      const { clientID, clientSecret, callbackURL } = await inquirer.prompt([
-            {
-                  type: "input",
-                  name: "clientID",
-                  message: "Enter your Google OAuth Client ID:",
-            },
-            {
-                  type: "input",
-                  name: "clientSecret",
-                  message: "Enter your Google OAuth Client Secret:",
-            },
-      ]);
-
-      //  Inject into .env
-      injectEnvVars(targetPath, {
-            GOOGLE_CLIENT_ID: clientID,
-            GOOGLE_CLIENT_SECRET: clientSecret,
-            GOOGLE_CALLBACK_URL: callbackURL,
-      });
-
-
-      const deps = ["passport", 'passport-google-oauth20', "express-session", "dotenv"];
-      installDependencies(targetPath, deps);
-
-      //  Patch entry file
-      ensureAppJsHasOAuthSetup(entryFilePath);
-
-      //  Copy EJS templates → project files
-      const templatesDir = path.join(__dirname, "templates");
-
-      // config/GoogleStrategy.js
-      const configDir = path.join(targetPath, "config");
-      ensureDir(configDir);
-      renderTemplate(
-            path.join(templatesDir, "config", "googleStrategy.ejs"),
-            path.join(configDir, "googleStrategy.js"),
-            { clientID, clientSecret, callbackURL }
-      );
-
-      // routes/authRoutes.js
-      const routesDir = path.join(targetPath, "routes");
+      // 8️⃣ Set directories for controllers/routes
+      const baseDir = language === "TypeScript" ? path.join(targetPath, "src") : targetPath;
+      const controllersDir = path.join(baseDir, "controllers");
+      const routesDir = path.join(baseDir, "routes");
+      ensureDir(controllersDir);
       ensureDir(routesDir);
+
+      // 9️⃣ Template rendering
+      const templateDir = path.join(__dirname, "templates", language.toLowerCase());
       renderTemplate(
-            path.join(templatesDir, "routes", "googleRoutes.ejs"),
-            path.join(routesDir, "googleRoutes.js"),
-            {}
+            path.join(templateDir, "config", "googleAuthController.ejs"),
+            path.join(controllersDir, `googleAuthController.${language === "TypeScript" ? "ts" : "js"}`)
+      );
+      renderTemplate(
+            path.join(templateDir, "routes", "googleAuthRoutes.ejs"),
+            path.join(routesDir, `googleAuthRoutes.${language === "TypeScript" ? "ts" : "js"}`)
       );
 
-      console.log("📂 OAuth config & routes created!");
+      // 🔟 Inject routes into entry file
+      let appCode = fs.readFileSync(appPath, "utf-8");
+      if (!appCode.includes("googleAuthRoutes")) {
+            const importLine = language === "TypeScript"
+                  ? `import googleAuthRoutes from "./routes/googleAuthRoutes";`
+                  : `import googleAuthRoutes from "./routes/googleAuthRoutes.js";`;
+            appCode = `${importLine}\n${appCode}`;
+            if (!appCode.includes(`app.use("/", googleAuthRoutes);`)) {
+                  appCode += `\napp.use("/", googleAuthRoutes);\n`;
+            }
+            fs.writeFileSync(appPath, appCode);
+      }
 
+      // 1️⃣1️⃣ Install dependencies
+      if (packageManager) {
+            // Runtime dependencies for both JS and TS
+            const runtimeDeps = ["express", "passport", "passport-google-oauth20", "dotenv"];
 
+            // Dev dependencies only for TypeScript
+            const devDeps = language === "TypeScript"
+                  ? [
+                        "typescript",
+                        "ts-node",
+                        "@types/node",
+                        "@types/express",
+                        "@types/passport",
+                        "@types/passport-google-oauth20",
+                        "@types/dotenv"
+                  ]
+                  : [];
 
+            // Install runtime dependencies
+            await installDepsWithChoice(targetPath, runtimeDeps, packageManager, false); // false = runtime
+
+            // Install dev dependencies if any
+            if (devDeps.length > 0) {
+                  await installDepsWithChoice(targetPath, devDeps, packageManager, true); // true = dev
+            }
+      } else {
+            console.warn("⚠️ Could not detect package manager. Please install dependencies manually.");
+      }
+
+      // 1️⃣2️⃣ Inject .env variables
+      await injectEnvVars(targetPath, {
+            GOOGLE_CLIENT_ID: "your_google_client_id_here",
+            GOOGLE_CLIENT_SECRET: "your_google_client_secret_here",
+            GOOGLE_CALLBACK_URL: "http://localhost:3000/auth/google/callback",
+      });
 
       console.log("✅ Google OAuth setup complete!");
 }
