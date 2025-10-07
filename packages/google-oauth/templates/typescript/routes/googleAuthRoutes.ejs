@@ -1,9 +1,46 @@
-import express, { Router } from "express";
-import { googleAuth, googleCallback } from "../controllers/googleAuthController";
+import { Router, Request, Response, NextFunction } from "express";
+import passport from "passport";
+import { IUser } from "../config/googleStrategy.js";
 
-const router: Router = express.Router();
+const router: Router = Router();
 
-router.get("/auth/google", googleAuth);
-router.get("/auth/google/callback", googleCallback);
+/**
+* Initiates Google OAuth flow
+*/
+router.get(
+"/auth/google",
+passport.authenticate("google", {
+scope: ["profile", "email"],
+})
+);
+
+/**
+* Handles Google OAuth callback
+*/
+router.get(
+"/auth/google/callback",
+(req: Request, res: Response, next: NextFunction) => {
+passport.authenticate("google", { failureRedirect: "/" })(req, res, next);
+},
+(req: Request, res: Response) => {
+// Cast req.user to IUser
+const user = req.user as IUser | undefined;
+
+if (user) {
+res.send(`
+<h1>Logged In Successfully ✅</h1>
+<p>Welcome, ${user.displayName}!</p>
+<p>Email: ${user.emails?.[0]?.value || "N/A"}</p>
+<p><a href="/">Go back home</a></p>
+`);
+} else {
+res.send(`
+<h1>Login Failed ❌</h1>
+<p>No user data found.</p>
+<p><a href="/">Try again</a></p>
+`);
+}
+}
+);
 
 export default router;
