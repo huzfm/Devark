@@ -78,7 +78,7 @@ export default async function runGoogleOAuthGenerator(targetPath) {
 
       // 7️⃣ Ensure entry file has imports, middleware & routes
       try {
-            await ensureAppJsHasGoogleOAuthSetup(appPath, language);
+            ensureAppJsHasGoogleOAuthSetup(appPath, language);
       } catch (err) {
             console.error("❌ Failed to inject Google OAuth setup:", err.message);
             return;
@@ -89,22 +89,22 @@ export default async function runGoogleOAuthGenerator(targetPath) {
             {
                   type: "input",
                   name: "GOOGLE_CLIENT_ID",
-                  message: "Enter your Google Client ID (leave blank to skip):",
+                  message: "Enter your Google Client ID:",
             },
             {
                   type: "input",
                   name: "GOOGLE_CLIENT_SECRET",
-                  message: "Enter your Google Client Secret (leave blank to skip):",
+                  message: "Enter your Google Client Secret:",
             },
             {
                   type: "input",
                   name: "GOOGLE_CALLBACK_URL",
-                  message: "Enter your Google Callback URL (leave blank to skip, default http://localhost:3000/auth/google/callback):",
+                  message: "Enter your Google Callback URL (default http://localhost:3000/auth/google/callback):",
             },
             {
                   type: "input",
                   name: "SESSION_SECRET",
-                  message: "Enter a session secret (leave blank to skip):",
+                  message: "Enter a session secret:",
             },
       ]);
 
@@ -117,9 +117,9 @@ export default async function runGoogleOAuthGenerator(targetPath) {
 
       if (Object.keys(envVars).length > 0) {
             await injectEnvVars(targetPath, envVars);
-            console.log("✅ .env updated with provided credentials");
+            console.log("\x1b[32m%s\x1b[0m", " .env updated with provided credentials");
       } else {
-            console.log("ℹ️ No credentials provided. .env was not modified.");
+            console.log("\x1b[31m%s\x1b[0m", " No credentials provided. .env was not modified.");
       }
 
       // 9️⃣ Install dependencies
@@ -132,5 +132,6 @@ export default async function runGoogleOAuthGenerator(targetPath) {
             if (devDeps.length > 0) await installDepsWithChoice(targetPath, devDeps, packageManager, true);
       }
 
-      console.log("✅ Google OAuth setup complete!");
+      console.log("\x1b[1m\x1b[92m%s\x1b[0m", "Google OAuth setup complete!");
+
 }
