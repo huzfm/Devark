@@ -65,7 +65,6 @@ export async function installDepsWithChoice(targetPath, dependencies, packageMan
 
       console.log(`📦 Installing dependencies using ${packageManager}...`);
       execSync(commands[packageManager], { cwd: targetPath, stdio: "inherit" });
-      console.log("✅ Dependencies installed successfully!");
       return true;
 }
 
