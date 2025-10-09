@@ -126,7 +126,7 @@ export default async function runGoogleOAuthGenerator(targetPath) {
       if (packageManager) {
             const runtimeDeps = ["express", "passport", "passport-google-oauth20", "dotenv"];
             const devDeps = language === "TypeScript"
-                  ? ["typescript", "ts-node", "@types/node", "@types/express", "@types/passport", "@types/passport-google-oauth20"]
+                  ? ["typescript", "ts-node", "@types/node", "@types/express", " @types/express-session", "@types/passport", "@types/passport-google-oauth20"]
                   : [];
             await installDepsWithChoice(targetPath, runtimeDeps, packageManager, false);
             if (devDeps.length > 0) await installDepsWithChoice(targetPath, devDeps, packageManager, true);
