@@ -1,0 +1,50 @@
+import passport from "passport";
+import { Strategy as GoogleStrategy, Profile as GoogleProfile } from "passport-google-oauth20";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+export interface IUser {
+id: string;
+displayName: string;
+emails?: { value: string }[];
+photos?: { value: string }[];
+}
+
+passport.use(
+new GoogleStrategy(
+{
+clientID: process.env.GOOGLE_CLIENT_ID!,
+clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:3000/auth/google/callback",
+},
+async (
+accessToken: string,
+refreshToken: string,
+profile: GoogleProfile,
+done: (err: any, user?: Express.User) => void // Use Express.User here
+) => {
+try {
+const user: IUser = {
+id: profile.id,
+displayName: profile.displayName,
+emails: profile.emails,
+photos: profile.photos,
+};
+return done(null, user); // Now matches Express.User
+} catch (err) {
+return done(err as Error);
+}
+}
+)
+);
+
+// Serialize user
+passport.serializeUser((user: Express.User, done) => {
+done(null, user);
+});
+
+// Deserialize user
+passport.deserializeUser((user: Express.User, done) => {
+done(null, user);
+});
