@@ -1,51 +1,34 @@
-import figlet from 'figlet';
-import gradient from 'gradient-string';
+import figlet from "figlet";
+import gradient from "gradient-string";
 
 export async function showDevarkLogo() {
       return new Promise((resolve) => {
             console.clear();
 
             figlet(
-                  'Devark',
+                  "DevArk",
                   {
-                        font: 'mini',
-                        horizontalLayout: 'default',
-                        verticalLayout: 'default',
+                        font: "Standard",
+                        horizontalLayout: "default",
+                        verticalLayout: "default",
                   },
                   (err, data) => {
-                        if (err) {
-                              console.log('Error creating logo');
-                              resolve();
-                              return;
+                        if (err || !data) {
+                              console.log("DevArk");
+                              return resolve();
                         }
 
-                        // Logo gradient
-                        const grayGradient = gradient([
-                              '#f8fafc',
-                              '#e2e8f0',
-                              '#94a3b8',
-                              '#64748b',
-                        ]);
-                        console.log(grayGradient.multiline(data));
-                        console.log('');
+                        try {
+                              const logoGradient = gradient("#000")
+                              console.log(logoGradient.multiline(data));
+                              console.log(""); // blank line for spacing
+                        } catch {
+                              console.log(data);
+                              console.log("");
+                        }
 
-                        // Tagline
-                        const taglineGradient = gradient([
-                              '#cbd5e1',
-                              '#94a3b8',
-                        ]);
-                        console.log(
-                              taglineGradient(
-                                    ' ⚡ The fastest way to build your backend |',
-                              ),
-                        );
-
-                        // Animated line
-                        setTimeout(() => {
-                              console.log('');
-                              resolve();
-                        }, 0);
-                  },
+                        resolve();
+                  }
             );
       });
 }
