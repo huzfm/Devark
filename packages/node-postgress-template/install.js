@@ -3,8 +3,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import inquirer from "inquirer";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
-import { installDepsWithChoice } from "../../utils/packageManager.js";
-import { detectPackageManagerByCommnad } from "../../utils/packageManager.js";
+import { installDepsWithChoice, detectByCommand } from "../../utils/packageManager.js";
+
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,7 +14,7 @@ export default async function runNodePostgresGenerator(targetPath) {
 
 
       //detect package manager from command
-      const packageManager = detectPackageManagerByCommnad();
+      const packageManager = detectByCommand();
       console.log(`📦 Using package manager: ${packageManager}`);
 
 
