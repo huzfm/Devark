@@ -2,8 +2,15 @@ import fs from "fs";
 import path from "path";
 import inquirer from "inquirer";
 import { fileURLToPath } from "url";
-import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
-import { installDepsWithChoice, isValidNodeProject, detectPackageManager } from "../../utils/packageManager.js";
+import {
+      ensureDir,
+      renderTemplate
+} from "../../utils/filePaths.js";
+import {
+      installDepsWithChoice,
+      isValidNodeProject,
+      detectPackageManager
+} from "../../utils/packageManager.js";
 import { injectEnvVars } from "../../utils/injectEnvVars.js";
 import { ensureAppJsHasGoogleOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js';
 
@@ -19,8 +26,10 @@ export default async function runGoogleOAuthGenerator(targetPath) {
 
       // 2️⃣ Detect package manager
       const packageManager = detectPackageManager(targetPath);
-      if (packageManager) console.log(`📦 Detected ${packageManager}, dependencies will be installed automatically.`);
-      else console.warn("⚠️ Could not detect package manager. You may need to install dependencies manually.");
+      if (packageManager)
+            console.log(` ${packageManager} detected`);
+      else
+            console.warn(" Could not detect package manager.");
 
       // 3️⃣ Ask for JS/TS
       const { language } = await inquirer.prompt([{
@@ -57,6 +66,16 @@ export default async function runGoogleOAuthGenerator(targetPath) {
       if (!fs.existsSync(appPath)) {
             console.error(`❌ Entry file "${entryFile}" not found. Aborting.`);
             return;
+      }
+
+      // 9️⃣ Install dependencies
+      if (packageManager) {
+            const runtimeDeps = ["express", "passport", "passport-google-oauth20", "dotenv"];
+            const devDeps = language === "TypeScript"
+                  ? ["typescript", "ts-node", "@types/node", "@types/express", " @types/express-session", "@types/passport", "@types/passport-google-oauth20"]
+                  : [];
+            await installDepsWithChoice(targetPath, runtimeDeps, packageManager, false);
+            if (devDeps.length > 0) await installDepsWithChoice(targetPath, devDeps, packageManager, true);
       }
 
       // 6️⃣ Prepare controllers & routes
@@ -116,20 +135,10 @@ export default async function runGoogleOAuthGenerator(targetPath) {
       if (creds.SESSION_SECRET) envVars.SESSION_SECRET = creds.SESSION_SECRET;
 
       if (Object.keys(envVars).length > 0) {
-            await injectEnvVars(targetPath, envVars);
+            injectEnvVars(targetPath, envVars);
             console.log("\x1b[32m%s\x1b[0m", " .env updated with provided credentials");
       } else {
             console.log("\x1b[31m%s\x1b[0m", " No credentials provided. .env was not modified.");
-      }
-
-      // 9️⃣ Install dependencies
-      if (packageManager) {
-            const runtimeDeps = ["express", "passport", "passport-google-oauth20", "dotenv"];
-            const devDeps = language === "TypeScript"
-                  ? ["typescript", "ts-node", "@types/node", "@types/express", " @types/express-session", "@types/passport", "@types/passport-google-oauth20"]
-                  : [];
-            await installDepsWithChoice(targetPath, runtimeDeps, packageManager, false);
-            if (devDeps.length > 0) await installDepsWithChoice(targetPath, devDeps, packageManager, true);
       }
 
       console.log("\x1b[1m\x1b[92m%s\x1b[0m", "Google OAuth setup complete!");
