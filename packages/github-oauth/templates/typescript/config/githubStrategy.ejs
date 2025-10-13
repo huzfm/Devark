@@ -1,0 +1,33 @@
+import passport from "passport";
+import { Strategy as GitHubStrategy, Profile } from "passport-github2";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+passport.use(
+new GitHubStrategy(
+{
+clientID: process.env.GITHUB_CLIENT_ID as string,
+clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+callbackURL: process.env.GITHUB_CALLBACK_URL as string,
+},
+(
+accessToken: string,
+refreshToken: string,
+profile: Profile,
+done: (error: any, user?: any) => void
+) => {
+return done(null, profile);
+}
+)
+);
+
+passport.serializeUser((user: Express.User, done) => {
+done(null, user);
+});
+
+passport.deserializeUser((obj: Express.User, done) => {
+done(null, obj);
+});
+
+export default passport;
