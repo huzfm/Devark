@@ -1,0 +1,27 @@
+import express, { Request, Response } from "express";
+import passport from "passport";
+import "../config/githubStrategy.js"; // keep as .js if compiled separately, else change to .ts if in same TS build
+
+const router = express.Router();
+
+// Redirect user to GitHub for authentication
+router.get(
+"/auth/github",
+passport.authenticate("github", { scope: ["user:email"] })
+);
+
+// GitHub OAuth callback route
+router.get(
+"/auth/github/callback",
+passport.authenticate("github", { failureRedirect: "/" }),
+(req: Request, res: Response) => {
+res.redirect("/auth/github/success");
+}
+);
+
+// Success page route
+router.get("/auth/github/success", (req: Request, res: Response) => {
+res.send("✅ Logged in successfully!");
+});
+
+export default router;
