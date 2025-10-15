@@ -3,4 +3,3 @@
 
 echo "🔧 Running pre-commit hook..."
 pnpm exec lint-staged
-z
