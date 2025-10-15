@@ -1,99 +1,153 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import inquirer from "inquirer";
-import { injectEnvVars } from "../../utils/injectEnvVars.js";
+import { fileURLToPath } from "url";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
-import { detectPackageManager, installDependencies } from "../../utils/packageManager.js";
+import {
+  installDepsWithChoice,
+  isValidNodeProject,
+  detectPackageManager,
+} from "../../utils/packageManager.js";
+import { injectEnvVars } from "../../utils/injectEnvVars.js";
 import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup.js";
-import { isValidNodeProject } from "../../utils/packageManager.js";
-// __dirname workaround
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function installOtp(targetPath) {
-      if (!isValidNodeProject(targetPath)) {
-            console.error("❌ The folder does not contain a valid Node.js project (missing or invalid package.json). Aborting.");
-            return;
+  // 1️⃣ Validate Node project
+  if (!isValidNodeProject(targetPath)) {
+    console.error(
+      "❌ Not a valid Node.js project (missing package.json). Aborting."
+    );
+    return;
+  }
+
+  console.log("\x1b[1m\x1b[32mInstalling Resend OTP module...\x1b[0m");
+
+  // 2️⃣ Detect package manager
+  const packageManager = detectPackageManager(targetPath);
+  if (packageManager) console.log(` ${packageManager} detected`);
+  else console.warn(" Could not detect package manager.");
+
+  // 3️⃣ Ask for JavaScript / TypeScript
+  const { language } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "language",
+      message: "Which version do you want to add?",
+      choices: ["JavaScript", "TypeScript"],
+      default: "JavaScript",
+    },
+  ]);
+
+  // 4️⃣ Determine entry file path
+  const defaultEntry = language === "TypeScript" ? "src/app.ts" : "app.js";
+  let { entryFile } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "entryFile",
+      message: "Enter your project entry file (relative to root):",
+      default: defaultEntry,
+    },
+  ]);
+
+  let appPath = path.join(targetPath, entryFile);
+
+  // Auto-detect TS entry file if missing
+  if (language === "TypeScript" && !fs.existsSync(appPath)) {
+    const srcDir = path.join(targetPath, "src");
+    if (fs.existsSync(srcDir)) {
+      const tsFiles = fs.readdirSync(srcDir).filter((f) => f.endsWith(".ts"));
+      if (tsFiles.length > 0) {
+        entryFile = path.join("src", tsFiles[0]);
+        appPath = path.join(targetPath, entryFile);
+        console.log(`ℹ️ Auto-detected TypeScript entry file: ${entryFile}`);
       }
-      console.log('\x1b[1m\x1b[32mInstalling Resend-OTP module to your project. Please read the instructions carefully.\x1b[0m');
+    }
+  }
 
-      const packageManager = detectPackageManager(targetPath);
-      if (packageManager) {
-            console.log(` ${packageManager} detected as package manager.`);
-      } else {
-            console.error("❌ Could not detect package manager (pnpm, npm, or yarn). Please install dependencies manually:");
-            return;
-      }
-      // ✅ Prompt entry file first
-      const { entryFile } = await inquirer.prompt([
-            {
-                  type: "input",
-                  name: "entryFile",
-                  message: "What is your entry file? (e.g., app.js , index.js , server.js)",
-                  default: "app.js",
-            },
-      ]);
+  if (!fs.existsSync(appPath)) {
+    console.error(`❌ Entry file "${entryFile}" not found. Aborting.`);
+    return;
+  }
 
-      const entryFilePath = path.join(targetPath, entryFile);
-      if (!fs.existsSync(entryFilePath)) {
-            console.error(`❌ Entry file ${entryFile} not found in ${targetPath}. Aborting.`);
-            return;
-      }
+  // 5️⃣ Ask for environment variables (Resend credentials)
+  const { apiKey, fromEmail } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "apiKey",
+      message: "Enter your Resend API Key (leave empty for sample):",
+    },
+    {
+      type: "input",
+      name: "fromEmail",
+      message: "Enter your FROM email address (leave empty for sample):",
+    },
+  ]);
 
-      // ✅ Prompt for env vars
-      const { apiKey, fromEmail } = await inquirer.prompt([
-            {
-                  type: "input",
-                  name: "apiKey",
-                  message: "Enter your Resend API Key:",
-            },
-            {
-                  type: "input",
-                  name: "fromEmail",
-                  message: "Enter your FROM email address:",
-            },
-      ]);
+  // Default fallback values
+  const envVars = {
+    RESEND_API_KEY: apiKey || "sample-resend-api-key",
+    FROM_EMAIL: fromEmail || "sample@devark.io",
+  };
 
-      // ✅ Inject into .env
-      injectEnvVars(targetPath, {
-            RESEND_API_KEY: apiKey,
-            FROM_EMAIL: fromEmail,
-      });
-      const deps = ["resend"]
-      installDependencies(targetPath, deps);
+  // Inject .env values
+  injectEnvVars(targetPath, envVars);
+  console.log("\x1b[32m%s\x1b[0m", " .env updated with Resend credentials");
 
-      // ✅ Patch entry file with express.json + otpRoutes
-      ensureAppJsHasOtpSetup(entryFilePath);
+  // 6️⃣ Install dependencies
+  const runtimeDeps = ["resend", "express"];
+  const devDeps =
+    language === "TypeScript"
+      ? ["typescript", "ts-node", "@types/node", "@types/express"]
+      : [];
 
-      // ✅ Copy EJS templates → project files
-      const templatesDir = path.join(__dirname, "templates");
+  if (packageManager) {
+    await installDepsWithChoice(targetPath, runtimeDeps, packageManager, false);
+    if (devDeps.length > 0)
+      await installDepsWithChoice(targetPath, devDeps, packageManager, true);
+  }
 
-      // controllers/otpController.js
-      const controllersDir = path.join(targetPath, "controllers");
-      ensureDir(controllersDir);
-      renderTemplate(
-            path.join(templatesDir, "otpFunctions.ejs"),
-            path.join(controllersDir, "otpFunctions.js"),
-            {}
-      );
-      renderTemplate(
-            path.join(templatesDir, "otp.ejs"),
-            path.join(controllersDir, "otp.js"),
-            {}
-      );
+  // 7️⃣ Patch entry file
+  try {
+    ensureAppJsHasOtpSetup(appPath, language);
+  } catch (err) {
+    console.error("❌ Failed to inject OTP setup:", err.message);
+    return;
+  }
 
-      // routes/otpRoutes.js
-      const routesDir = path.join(targetPath, "routes");
-      ensureDir(routesDir);
-      renderTemplate(
-            path.join(templatesDir, "otpRoutes.ejs"),
-            path.join(routesDir, "otpRoutes.js"),
-            {}
-      );
+  // 8️⃣ Generate controllers and routes
+  const baseDir =
+    language === "TypeScript" ? path.join(targetPath, "src") : targetPath;
+  const controllersDir = path.join(baseDir, "controllers");
+  const routesDir = path.join(baseDir, "routes");
+  ensureDir(controllersDir);
+  ensureDir(routesDir);
 
-      console.log("📂 OTP controller & routes created!");
+  const templateDir = path.join(__dirname, "templates", language.toLowerCase());
+  renderTemplate(
+    path.join(templateDir, "otpFunctions.ejs"),
+    path.join(
+      controllersDir,
+      `otpFunctions.${language === "TypeScript" ? "ts" : "js"}`
+    ),
+    {}
+  );
+  renderTemplate(
+    path.join(templateDir, "otp.ejs"),
+    path.join(controllersDir, `otp.${language === "TypeScript" ? "ts" : "js"}`),
+    {}
+  );
+  renderTemplate(
+    path.join(templateDir, "otpRoutes.ejs"),
+    path.join(
+      routesDir,
+      `otpRoutes.${language === "TypeScript" ? "ts" : "js"}`
+    ),
+    {}
+  );
 
-
-      console.log("✅ Resend OTP setup complete!");
+  console.log("📂 OTP controllers & routes created successfully!");
+  console.log("\x1b[1m\x1b[92mResend OTP setup complete!\x1b[0m");
 }

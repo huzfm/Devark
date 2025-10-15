@@ -1,0 +1,80 @@
+import dotenv from "dotenv";
+import { Resend } from "resend";
+
+dotenv.config();
+
+/**
+* Initialize Resend client using your API key from environment variables.
+*/
+const resend = new Resend(process.env.RESEND_API_KEY as string);
+
+/**
+* A simple in-memory store for OTPs.
+* Maps user email → { otp, expiresAt }
+*/
+interface OtpEntry {
+otp: string;
+expiresAt: number;
+}
+
+const otpStore: Map<string, OtpEntry> = new Map();
+      const OTP_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+
+      /**
+      * Sends a one-time password (OTP) via email using Resend.
+      * @param email The recipient's email address
+      * @returns true if sent successfully, false otherwise
+      */
+      export async function sendOtp(email: string): Promise<boolean> {
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const expiresAt = Date.now() + OTP_EXPIRY_MS;
+
+            otpStore.set(email, { otp, expiresAt });
+
+            const htmlContent = `
+            <p>Hello,</p>
+            <p>Your OTP for logging in is:</p>
+            <p><strong>${otp}</strong></p>
+            <p>This OTP will expire in 5 minutes. Do not share it with anyone.</p>
+            <p>&copy; ${new Date().getFullYear()}</p>
+            `;
+
+            try {
+            await resend.emails.send({
+            from: process.env.FROM_EMAIL as string,
+            to: email,
+            subject: "Your OTP Code",
+            html: htmlContent,
+            });
+
+            console.log(`✅ OTP sent to ${email}: ${otp}`);
+            return true;
+            } catch (err) {
+            console.error("❌ Failed to send OTP:", err);
+            return false;
+            }
+            }
+
+            /**
+            * Verifies the OTP entered by the user.
+            * @param email The user's email
+            * @param otp The OTP entered by the user
+            * @returns true if OTP matches and is valid, false otherwise
+            */
+            export function verifyOtp(email: string, otp: string): boolean {
+            const entry = otpStore.get(email);
+            if (!entry) return false;
+
+            // If OTP expired
+            if (Date.now() > entry.expiresAt) {
+            otpStore.delete(email);
+            return false;
+            }
+
+            const isValid = entry.otp === otp;
+            if (isValid) {
+            otpStore.delete(email); // Optional: remove after successful verification
+            }
+
+            return isValid;
+            }

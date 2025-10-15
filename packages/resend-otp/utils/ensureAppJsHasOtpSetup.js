@@ -1,57 +1,97 @@
 import fs from "fs";
+import path from "path";
 
-const requiredImports = [
-      "import otpRoutes from './routes/otpRoutes.js'",
-];
+/**
+ * Ensures entry file (app.js / app.ts / index.ts) has OTP setup for Resend.
+ * ✅ Handles both JavaScript and TypeScript.
+ * ✅ Safely merges imports, middleware, and route mounting.
+ */
+export function ensureAppJsHasOtpSetup(appPath, language = "JavaScript") {
+  const isTS = language === "TypeScript";
+  const ext = isTS ? ".ts" : ".js";
 
-const requiredMiddleware = [
-      "app.use(express.json())",
-      "app.use('/', otpRoutes)",
-];
+  if (!fs.existsSync(appPath)) {
+    console.warn(`⚠️ File not found: ${appPath}. Aborting update.`);
+    return;
+  }
 
-export async function ensureAppJsHasOtpSetup(appJsPath) {
-      if (!fs.existsSync(appJsPath) || !fs.lstatSync(appJsPath).isFile()) {
-            throw new Error(`❌ Provided path is not a file: ${appJsPath}`);
-      }
+  let content = fs.readFileSync(appPath, "utf-8");
 
-      let content = fs.readFileSync(appJsPath, "utf-8");
-      let lines = content.split("\n");
+  // ✅ Imports needed for OTP setup
+  const requiredImports = [
+    isTS
+      ? "import express, { Application } from 'express'"
+      : "import express from 'express'",
+    `import otpRoutes from './routes/otpRoutes.js'`,
+  ];
 
-      // ✅ Remove old imports (prevent duplicates)
-      lines = lines.filter(
-            (line) => !requiredImports.includes(line.trim())
-      );
+  // ✅ Middleware setup
+  const requiredMiddleware = [
+    "app.use(express.json())",
+    "app.use('/', otpRoutes)",
+  ];
 
-      // ✅ Insert required imports at the top
-      lines = [...requiredImports, "", ...lines];
+  // ✅ If empty file, write from scratch
+  if (!content.trim()) {
+    const scaffold = `
+${requiredImports.join(";\n")};
 
-      // ✅ Ensure app = express() exists
-      const appLineIndex = lines.findIndex((line) =>
-            /(?:const|let|var)\s+app\s*=\s*express\s*\(\)/.test(line)
-      );
+const app${isTS ? ": Application" : ""} = express();
 
-      if (appLineIndex === -1) {
-            lines.push("", "const app = express()");
-      }
+${requiredMiddleware.join(";\n")};
 
-      const finalAppLineIndex = lines.findIndex((line) =>
-            /(?:const|let|var)\s+app\s*=\s*express\s*\(\)/.test(line)
-      );
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
+`.trim();
 
-      // ✅ Remove old middleware lines (prevent duplicates)
-      const middlewareKeywords = [
-            "app.use(express.json()",
-            "app.use('/', otpRoutes)",
-      ];
-      lines = lines.filter(
-            (line) =>
-                  !middlewareKeywords.some((keyword) =>
-                        line.trim().startsWith(keyword)
-                  )
-      );
+    fs.writeFileSync(appPath, scaffold, "utf-8");
+    return;
+  }
 
-      // ✅ Insert middlewares after `app = express()`
-      lines.splice(finalAppLineIndex + 1, 0, ...requiredMiddleware);
+  // ✅ Otherwise, safely merge setup into existing file
+  let lines = content.split("\n");
 
-      fs.writeFileSync(appJsPath, lines.join("\n"), "utf-8");
+  // Remove duplicate imports
+  const trimmedImports = requiredImports.map((imp) => imp.trim());
+  lines = lines.filter((line) => !trimmedImports.includes(line.trim()));
+
+  // Prepend imports
+  lines = [...requiredImports, "", ...lines];
+
+  // Ensure app initialization exists
+  let appIndex = lines.findIndex((line) =>
+    /(?:const|let|var)\s+app\s*[:=]/.test(line)
+  );
+
+  if (appIndex === -1) {
+    lines.push(
+      "",
+      isTS ? "const app: Application = express();" : "const app = express();"
+    );
+    appIndex = lines.findIndex((line) =>
+      /(?:const|let|var)\s+app\s*[:=]/.test(line)
+    );
+  }
+
+  // Remove old middleware (to prevent duplicates)
+  const mwKeywords = ["app.use(express.json", "app.use('/"];
+  lines = lines.filter(
+    (line) => !mwKeywords.some((kw) => line.trim().startsWith(kw))
+  );
+
+  // Insert middlewares after app = express()
+  lines.splice(appIndex + 1, 0, ...requiredMiddleware, "");
+
+  // Add listener if missing
+  if (!lines.some((line) => /app\.listen/.test(line))) {
+    lines.push(
+      "",
+      "app.listen(3000, () => {",
+      "  console.log('Server running on http://localhost:3000');",
+      "});"
+    );
+  }
+
+  fs.writeFileSync(appPath, lines.join("\n"), "utf-8");
 }

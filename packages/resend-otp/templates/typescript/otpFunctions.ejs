@@ -1,0 +1,68 @@
+import type { Request, Response } from "express";
+import { sendOtp, verifyOtp } from "../controllers/otp.js";
+
+/**
+* Handles sending OTP to the user's email.
+*/
+export async function sendOtpHandler(req: Request, res: Response): Promise<Response> {
+      const { email } = req.body;
+
+      if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+      }
+
+      try {
+      const sent = await sendOtp(email);
+
+      if (sent) {
+      return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully.",
+      });
+      } else {
+      return res.status(500).json({
+      success: false,
+      message: "Failed to send OTP. Please try again later.",
+      });
+      }
+      } catch (err) {
+      console.error("❌ Error sending OTP:", err);
+      return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+      });
+      }
+      }
+
+      /**
+      * Handles OTP verification.
+      */
+      export function verifyOtpHandler(req: Request, res: Response): Response {
+      const { email, otp } = req.body;
+
+      if (!email || !otp) {
+      return res.status(400).json({ error: "Email and OTP are required." });
+      }
+
+      try {
+      const valid = verifyOtp(email, otp);
+
+      if (valid) {
+      return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully.",
+      });
+      } else {
+      return res.status(401).json({
+      success: false,
+      message: "Invalid or expired OTP.",
+      });
+      }
+      } catch (err) {
+      console.error("❌ Error verifying OTP:", err);
+      return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+      });
+      }
+      }

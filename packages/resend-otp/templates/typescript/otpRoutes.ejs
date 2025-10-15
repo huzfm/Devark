@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { sendOtpHandler, verifyOtpHandler } from "../controllers/otpFunctions.js";
+
+const router = Router();
+
+// Route for sending OTP
+router.post("/send-otp", sendOtpHandler);
+
+// Route for verifying OTP
+router.post("/verify-otp", verifyOtpHandler);
+
+export default router;
