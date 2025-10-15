@@ -1,0 +1,78 @@
+# Project Instructions
+
+This guide explains how to set up your Node.js + TypeScript + MongoDB project after initializing it with your CLI.
+Follow the steps carefully to start developing.
+
+---
+
+---
+
+## 1. Setting Up Environment Variables
+
+1. Copy the `.env.example` file to `.env`:
+
+```bash
+cp .env.example .env # macOS/Linux
+copy .env.example .env # Windows PowerShell
+```
+
+2. Edit `.env` to add your project-specific values. Example:
+
+```
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/mydatabase
+```
+
+* `PORT` → The port your server will run on
+* `MONGO_URI` → Connection string for MongoDB (local or cloud)
+
+---
+
+## 3. Connecting to MongoDB
+
+### 3.1 Local MongoDB
+
+* Install MongoDB locally: [MongoDB Installation](https://www.mongodb.com/docs/manual/installation/)
+* Start MongoDB server:
+
+```bash
+# On Linux/macOS
+mongod
+
+# On Windows (PowerShell)
+"C:\Program Files\MongoDB\Server\<version>\bin\mongod.exe"
+      ```
+
+      * Make sure your `.env` `MONGO_URI` points to `mongodb://localhost:27017/<your-database>`
+
+            ### 3.2 MongoDB Atlas (Cloud)
+
+            1. Create a free cluster on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+            2. Whitelist your IP address and get the connection string
+            3. Paste the connection string in `.env` as `MONGO_URI`
+
+
+
+            **Notes:**
+
+            * `rootDir` → Your `.ts` files live here (`src/`)
+            * `outDir` → Compiled JS will be placed here (`dist/`)
+            * `strict` → Enables strict type-checking
+
+            ---
+
+            ## 4. Scripts in `package.json`
+
+            Add the following scripts to your `package.json`:
+
+            ```json
+            "scripts": {
+            "build": "tsc",
+            "start": "node dist/app.js",
+            "dev": "tsc && nodemon dist/app.js""
+            }
+            ```
+            // change according to your package manager and entry file
+
+
+            With these steps, your project should be ready for development with Node.js, TypeScript, and MongoDB.
