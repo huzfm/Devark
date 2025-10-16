@@ -3,74 +3,145 @@ import path from "path";
 import { fileURLToPath } from "url";
 import inquirer from "inquirer";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
-import { installDepsWithChoice, detectByCommand } from "../../utils/packageManager.js";
+import {
+  installDepsWithChoice,
+  detectByCommand,
+} from "../../utils/packageManager.js";
 
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function runNodePostgresGenerator(targetPath) {
-      console.log("\x1b[1m\x1b[32m🚀 Setting up Node.js + PostgreSQL + Prisma project...\x1b[0m");
+  console.log(
+    "\x1b[1m\x1b[32m🚀 Setting up Node.js + PostgreSQL + Prisma project...\x1b[0m"
+  );
 
+  // Ask for language choice
+  const { language } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "language",
+      message: "Which language would you like to use?",
+      choices: ["JavaScript", "TypeScript"],
+      default: "JavaScript",
+    },
+  ]);
 
-      //detect package manager from command
-      const packageManager = detectByCommand();
-      console.log(`📦 Using package manager: ${packageManager}`);
+  // Detect package manager
+  const packageManager = "pnpm";
+  //   const packageManager = detectByCommand();
+  console.log(`📦 Using package manager: ${packageManager}`);
 
+  // Set templates directory based on language
+  const templatesDir = path.join(
+    __dirname,
+    "templates",
+    language.toLowerCase()
+  );
 
-      // Ensure required folders exist
-      const folders = ["prisma", "routes", "controllers"];
-      folders.forEach((folder) => ensureDir(path.join(targetPath, folder)));
+  // Determine base directory (src for TS)
+  const baseDir =
+    language === "TypeScript" ? path.join(targetPath, "src") : targetPath;
 
-      // Templates directory
-      const templatesDir = path.join(__dirname, "templates");
+  // Ensure required folders exist
+  const folders = ["prisma", "routes", "controllers", "utils"];
+  folders.forEach((folder) => ensureDir(path.join(baseDir, folder)));
 
-      // Core files
-      renderTemplate(path.join(templatesDir, "app.ejs"), path.join(targetPath, "app.js"), {});
-      renderTemplate(path.join(templatesDir, "env.example.ejs"), path.join(targetPath, ".env.example"), {});
-      renderTemplate(path.join(templatesDir, "package.json.ejs"), path.join(targetPath, "package.json"), {});
+  // Copy core app and config files
+  const appFileName = language === "TypeScript" ? "app.ts" : "app.js";
+  renderTemplate(
+    path.join(
+      templatesDir,
+      language === "TypeScript" ? "app.ts.ejs" : "app.ejs"
+    ),
+    path.join(baseDir, appFileName),
+    {}
+  );
 
-      // Prisma schema
-      renderTemplate(path.join(templatesDir, "schema.prisma.ejs"), path.join(targetPath, "prisma/schema.prisma"), {});
+  // Env and package.json files
+  renderTemplate(
+    path.join(templatesDir, "env.example.ejs"),
+    path.join(targetPath, ".env.example"),
+    {}
+  );
+  renderTemplate(
+    path.join(
+      templatesDir,
+      language === "TypeScript" ? "package-ts.json.ejs" : "package.json.ejs"
+    ),
+    path.join(targetPath, "package.json"),
+    {}
+  );
 
-      // Example MVC boilerplate
-      renderTemplate(path.join(templatesDir, "routes/userRoutes.ejs"), path.join(targetPath, "routes/userRoutes.js"), {});
-      renderTemplate(
-            path.join(templatesDir, "controllers/userController.ejs"),
-            path.join(targetPath, "controllers/userController.js"),
-            {}
-      );
+  // Prisma schema
+  renderTemplate(
+    path.join(templatesDir, "schema.prisma.ejs"),
+    path.join(targetPath, "prisma/schema.prisma"),
+    {}
+  );
 
-      // Add Instructions.md
-      renderTemplate(path.join(templatesDir, "Instructions.ejs"), path.join(targetPath, "Instructions.md"), {});
+  // MVC boilerplate
+  const ext = language === "TypeScript" ? "ts" : "js";
+  renderTemplate(
+    path.join(templatesDir, `routes/userRoutes.ejs`),
+    path.join(baseDir, `routes/userRoutes.${ext}`),
+    {}
+  );
+  renderTemplate(
+    path.join(templatesDir, `controllers/userController.ejs`),
+    path.join(baseDir, `controllers/userController.${ext}`),
+    {}
+  );
 
-      // Install dependencies
-      const deps = ["express", "@prisma/client", "dotenv", "morgan", "nodemon"];
-      const devDeps = ["prisma"];
-      await installDepsWithChoice(targetPath, deps, packageManager, false);
-      await installDepsWithChoice(targetPath, devDeps, packageManager, true);
+  // ✅ utils/prisma-client.ts
+  renderTemplate(
+    path.join(templatesDir, "utils/prismaClient.ejs"),
+    path.join(baseDir, "utils/prisma-client.ts"),
+    {}
+  );
 
+  // Add Instructions.md
+  renderTemplate(
+    path.join(templatesDir, "Instructions.ejs"),
+    path.join(targetPath, "Instructions.md"),
+    {}
+  );
 
-      console.log(
-            "\x1b[1m\x1b[32m✅ Node.js + PostgreSQL + Prisma project setup completed!\x1b[0m\n" +
-            "📄 Please read the Instructions.md file for help on how to run and use your project."
-      );
+  // Copy tsconfig.json for TypeScript
+  if (language === "TypeScript") {
+    renderTemplate(
+      path.join(templatesDir, "tsconfig.json.ejs"),
+      path.join(targetPath, "tsconfig.json"),
+      {}
+    );
+  }
 
-      console.log(
-            "\x1b[1m\x1b[32m✅ Run the following commands:\x1b[0m\n"
-      );
+  // Dependencies
+  const deps = ["express", "@prisma/client", "dotenv", "morgan"];
+  const devDeps = ["prisma", "nodemon"];
+  if (language === "TypeScript") {
+    devDeps.push(
+      "typescript",
+      "ts-node",
+      "@types/node",
+      "@types/express",
+      "@types/morgan"
+    );
+  }
 
-      console.log(
-            "\x1b[36m npx prisma generate\x1b[0m"
-      );
+  // Install dependencies
+  await installDepsWithChoice(targetPath, deps, packageManager, false);
+  await installDepsWithChoice(targetPath, devDeps, packageManager, true);
 
-      console.log(
-            "\x1b[36m npx prisma migrate dev --name init\x1b[0m\n"
-      );
+  // Done!
+  console.log(
+    "\x1b[1m\x1b[32m✅ Node.js + PostgreSQL + Prisma project setup completed!\x1b[0m\n" +
+      "📄 Please read the Instructions.md file for help on how to run and use your project."
+  );
 
-      console.log(
-            "\x1b[33m Once done, you're all set! \x1b[0m"
-      );
-
-
+  console.log("\x1b[1m\x1b[32m✅ Run the following commands:\x1b[0m\n");
+  console.log("\x1b[36m npx prisma generate\x1b[0m");
+  console.log("\x1b[36m npx prisma migrate dev --name init\x1b[0m\n");
+  console.log("\x1b[33m Once done, you're all set! \x1b[0m");
 }
