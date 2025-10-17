@@ -1,0 +1,13 @@
+import express from "express";
+import {
+sendOtpHandler,
+verifyOtpHandler,
+} from "../controllers/otpFunctions.js";
+import { rateLimiter } from "../middleware/rateLimit.js";
+
+const router = express.Router();
+
+router.post("/send-otp", rateLimiter, sendOtpHandler);
+router.post("/verify-otp", rateLimiter, verifyOtpHandler);
+
+export default router;
