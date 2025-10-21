@@ -146,6 +146,7 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
         "typescript",
         "@types/node",
         "@types/express",
+        "@types/cors",
         "@types/morgan",
         "ts-node",
         "nodemon",

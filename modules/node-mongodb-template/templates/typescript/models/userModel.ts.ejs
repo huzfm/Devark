@@ -1,17 +1,48 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
-// Example User Interface
+/**
+* Interface describing the shape of a User document
+*/
 export interface IUser extends Document {
 name: string;
 email: string;
 createdAt: Date;
 }
 
-// Example User Schema
-const UserSchema: Schema = new Schema({
-name: { type: String, required: true },
-email: { type: String, required: true, unique: true },
-createdAt: { type: Date, default: Date.now },
-});
+/**
+* User Mongoose Schema definition
+*/
+const userSchema: Schema<IUser> = new Schema(
+      {
+      name: {
+      type: String,
+      required: [true, "Name is required"],
+      trim: true,
+      minlength: [2, "Name must be at least 2 characters long"],
+      maxlength: [50, "Name cannot exceed 50 characters"],
+      },
+      email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      "Please provide a valid email address",
+      ],
+      },
+      },
+      {
+      timestamps: true, // Adds createdAt & updatedAt automatically
+      versionKey: false, // Removes __v field
+      }
+      );
 
-export default mongoose.model<IUser>("User", UserSchema);
+      userSchema.pre("save", function (next) {
+      this.email = this.email.toLowerCase();
+      next();
+      });
+
+      const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
+                  export default User;

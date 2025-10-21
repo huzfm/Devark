@@ -1,141 +1,163 @@
 import { Request, Response } from "express";
 import User, { IUser } from "../models/userModel.js";
 
-// Get all users
-export const getUsers = async (req: Request, res: Response) => {
-try {
-const users = await User.find().select("-__v");
-res.status(200).json({
-success: true,
-data: users,
-});
-} catch (error) {
-res.status(500).json({
-success: false,
-message: "Error fetching users",
-error: error instanceof Error ? error.message : "Unknown error",
-});
-}
-};
+export const getUsers = async (_req: Request, res: Response): Promise<void> => {
+      try {
+      const users = await User.find().select("-__v").sort({ createdAt: -1 });
 
-// Get single user by ID
-export const getUserById = async (req: Request, res: Response) => {
-try {
-const user = await User.findById(req.params.id).select("-__v");
-if (!user) {
-return res.status(404).json({
-success: false,
-message: "User not found",
-});
-}
-res.status(200).json({
-success: true,
-data: user,
-});
-} catch (error) {
-res.status(500).json({
-success: false,
-message: "Error fetching user",
-error: error instanceof Error ? error.message : "Unknown error",
-});
-}
-};
+      res.status(200).json({
+      success: true,
+      count: users.length,
+      data: users,
+      });
+      } catch (error) {
+      handleServerError(res, error, "Error fetching users");
+      }
+      };
 
-// Create new user
-export const createUser = async (req: Request, res: Response) => {
-try {
-const user: IUser = new User(req.body);
-const savedUser = await user.save();
-res.status(201).json({
-success: true,
-data: savedUser,
-});
-} catch (error) {
-res.status(500).json({
-success: false,
-message: "Error creating user",
-error: error instanceof Error ? error.message : "Unknown error",
-});
-}
-};
+      export const getUserById = async (
+      req: Request,
+      res: Response
+      ): Promise<void> => {
+            try {
+            const { id } = req.params;
+            const user = await User.findById(id).select("-__v");
 
-// Update user
-export const updateUser = async (req: Request, res: Response) => {
-try {
-const user = await User.findByIdAndUpdate(
-req.params.id,
-{ $set: req.body },
-{ new: true, runValidators: true }
-).select("-__v");
+            if (!user) {
+            res.status(404).json({ success: false, message: "User not found" });
+            return;
+            }
 
-if (!user) {
-return res.status(404).json({
-success: false,
-message: "User not found",
-});
-}
+            res.status(200).json({ success: true, data: user });
+            } catch (error) {
+            handleServerError(res, error, "Error fetching user");
+            }
+            };
 
-res.status(200).json({
-success: true,
-data: user,
-});
-} catch (error) {
-res.status(500).json({
-success: false,
-message: "Error updating user",
-error: error instanceof Error ? error.message : "Unknown error",
-});
-}
-};
+            export const createUser = async (
+            req: Request,
+            res: Response
+            ): Promise<void> => {
+                  try {
+                  const { name, email } = req.body as IUser;
 
-// Delete user
-export const deleteUser = async (req: Request, res: Response) => {
-try {
-const user = await User.findByIdAndDelete(req.params.id);
+                  if (!name || !email) {
+                  res.status(400).json({
+                  success: false,
+                  message: "Name and email are required",
+                  });
+                  return;
+                  }
 
-if (!user) {
-return res.status(404).json({
-success: false,
-message: "User not found",
-});
-}
+                  const existing = await User.findOne({ email });
+                  if (existing) {
+                  res.status(409).json({
+                  success: false,
+                  message: "Email already in use",
+                  });
+                  return;
+                  }
 
-res.status(200).json({
-success: true,
-message: "User deleted successfully",
-});
-} catch (error) {
-res.status(500).json({
-success: false,
-message: "Error deleting user",
-error: error instanceof Error ? error.message : "Unknown error",
-});
-}
-};
+                  const user = new User({ name, email });
+                  const savedUser = await user.save();
 
-// Search users
-export const searchUsers = async (req: Request, res: Response) => {
-try {
-const { query } = req.query;
-const searchQuery = query
-? {
-$or: [
-{ name: { $regex: query, $options: "i" } },
-{ email: { $regex: query, $options: "i" } },
-],
-}
-: {};
+                  res.status(201).json({
+                  success: true,
+                  message: "User created successfully",
+                  data: savedUser,
+                  });
+                  } catch (error) {
+                  handleServerError(res, error, "Error creating user");
+                  }
+                  };
 
-const users = await User.find(searchQuery).select("-__v");
-res.status(200).json({
-success: true,
-data: users,
-});
-} catch (error) {
-res.status(500).json({
-success: false,
-message: "Error searching users",
-error: error instanceof Error ? error.message : "Unknown error",
-});
-}
-};
+                  export const updateUser = async (
+                  req: Request,
+                  res: Response
+                  ): Promise<void> => {
+                        try {
+                        const { id } = req.params;
+                        const updates = req.body;
+
+                        const user = await User.findByIdAndUpdate(id, updates, {
+                        new: true,
+                        runValidators: true,
+                        }).select("-__v");
+
+                        if (!user) {
+                        res.status(404).json({ success: false, message: "User not found" });
+                        return;
+                        }
+
+                        res.status(200).json({
+                        success: true,
+                        message: "User updated successfully",
+                        data: user,
+                        });
+                        } catch (error) {
+                        handleServerError(res, error, "Error updating user");
+                        }
+                        };
+
+                        export const deleteUser = async (
+                        req: Request,
+                        res: Response
+                        ): Promise<void> => {
+                              try {
+                              const { id } = req.params;
+                              const user = await User.findByIdAndDelete(id);
+
+                              if (!user) {
+                              res.status(404).json({ success: false, message: "User not found" });
+                              return;
+                              }
+
+                              res.status(200).json({
+                              success: true,
+                              message: "User deleted successfully",
+                              });
+                              } catch (error) {
+                              handleServerError(res, error, "Error deleting user");
+                              }
+                              };
+
+                              export const searchUsers = async (
+                              req: Request,
+                              res: Response
+                              ): Promise<void> => {
+                                    try {
+                                    const queryParam = req.query.query as string;
+
+                                    const searchQuery = queryParam
+                                    ? {
+                                    $or: [
+                                    { name: { $regex: queryParam, $options: "i" } },
+                                    { email: { $regex: queryParam, $options: "i" } },
+                                    ],
+                                    }
+                                    : {};
+
+                                    const users = await User.find(searchQuery).select("-__v");
+
+                                    res.status(200).json({
+                                    success: true,
+                                    count: users.length,
+                                    data: users,
+                                    });
+                                    } catch (error) {
+                                    handleServerError(res, error, "Error searching users");
+                                    }
+                                    };
+
+                                    const handleServerError = (
+                                    res: Response,
+                                    error: unknown,
+                                    message: string
+                                    ): void => {
+                                    console.error(`❌ ${message}:`, error);
+                                    res.status(500).json({
+                                    success: false,
+                                    message,
+                                    error: error instanceof Error ? error.message : "Unknown error",
+                                    });
+                                    };

@@ -1,31 +1,31 @@
-import express from 'express';
+import express from "express";
 import {
 getUsers,
 getUserById,
 createUser,
 updateUser,
 deleteUser,
-searchUsers
-} from '../controllers/userController.js';
+searchUsers,
+} from "../controllers/userController.js";
 
 const router = express.Router();
 
 // GET /api/users - Get all users
-router.get('/', getUsers);
+router.get("/", getUsers);
 
 // GET /api/users/search - Search users
-router.get('/search', searchUsers);
+router.get("/search", searchUsers);
 
 // GET /api/users/:id - Get single user
-router.get('/:id', getUserById);
+router.get("/:id", getUserById);
 
 // POST /api/users - Create new user
-router.post('/', createUser);
+router.post("/", createUser);
 
 // PUT /api/users/:id - Update user
-router.put('/:id', updateUser);
+router.put("/:id", updateUser);
 
 // DELETE /api/users/:id - Delete user
-router.delete('/:id', deleteUser);
+router.delete("/:id", deleteUser);
 
 export default router;

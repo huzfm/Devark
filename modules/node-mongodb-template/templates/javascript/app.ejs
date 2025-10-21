@@ -39,10 +39,6 @@ res.json({
 message: "Node mongo express server is running",
 success: true,
 time: new Date().toISOString(),
-device: {
-userAgent: req.headers["user-agent"],
-ipaddress: req.ip,
-},
 })
 );
 
