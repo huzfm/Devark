@@ -89,7 +89,7 @@ export default async function installOtp(targetPath) {
   // Default fallback values
   const envVars = {
     RESEND_API_KEY: apiKey || "sample-resend-api-key",
-    FROM_EMAIL: fromEmail || "sample@devark.io",
+    FROM_EMAIL: fromEmail || "onboarding@resend.dev",
   };
 
   // Inject .env values
@@ -117,30 +117,39 @@ export default async function installOtp(targetPath) {
     return;
   }
 
-  // 8️⃣ Generate controllers and routes
+  // 8️⃣ Generate controllers, routes, and middleware
   const baseDir =
     language === "TypeScript" ? path.join(targetPath, "src") : targetPath;
+
   const controllersDir = path.join(baseDir, "controllers");
   const routesDir = path.join(baseDir, "routes");
+  const middlewareDir = path.join(baseDir, "middleware");
+
   ensureDir(controllersDir);
   ensureDir(routesDir);
+  ensureDir(middlewareDir);
 
   const templateDir = path.join(__dirname, "templates", language.toLowerCase());
+
+  // 🧩 Controllers
   renderTemplate(
-    path.join(templateDir, "otpFunctions.ejs"),
+    path.join(templateDir, "controllers", "otpFunctions.ejs"),
     path.join(
       controllersDir,
       `otpFunctions.${language === "TypeScript" ? "ts" : "js"}`
     ),
     {}
   );
+
   renderTemplate(
-    path.join(templateDir, "otp.ejs"),
+    path.join(templateDir, "controllers", "otp.ejs"),
     path.join(controllersDir, `otp.${language === "TypeScript" ? "ts" : "js"}`),
     {}
   );
+
+  // 🧩 Routes
   renderTemplate(
-    path.join(templateDir, "otpRoutes.ejs"),
+    path.join(templateDir, "routes", "otpRoutes.ejs"),
     path.join(
       routesDir,
       `otpRoutes.${language === "TypeScript" ? "ts" : "js"}`
@@ -148,6 +157,18 @@ export default async function installOtp(targetPath) {
     {}
   );
 
-  console.log("📂 OTP controllers & routes created successfully!");
+  // 🧩 Middleware
+  renderTemplate(
+    path.join(templateDir, "middleware", "ratelimit.ejs"),
+    path.join(
+      middlewareDir,
+      `ratelimit.${language === "TypeScript" ? "ts" : "js"}`
+    ),
+    {}
+  );
+
+  console.log(
+    "📂 OTP controllers, routes, and middleware created successfully!"
+  );
   console.log("\x1b[1m\x1b[92mResend OTP setup complete!\x1b[0m");
 }
