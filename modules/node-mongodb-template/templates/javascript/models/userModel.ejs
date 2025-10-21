@@ -1,21 +1,36 @@
 import mongoose from "mongoose";
 
-//basic user schema with name, email, and createdAt fields
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+{
 name: {
 type: String,
-required: true,
-trim: true
+required: [true, "Name is required"],
+trim: true,
+minlength: [2, "Name must be at least 2 characters"],
+maxlength: [50, "Name cannot exceed 50 characters"],
 },
 email: {
 type: String,
-required: true,
-unique: true
+required: [true, "Email is required"],
+unique: true,
+lowercase: true,
+trim: true,
+match: [
+/^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+"Please provide a valid email address",
+],
 },
-createdAt: {
-type: Date,
-default: Date.now
+},
+{
+timestamps: true,
+versionKey: false,
 }
+);
+
+// Optional: pre-save hook
+userSchema.pre("save", function (next) {
+this.email = this.email.toLowerCase();
+next();
 });
 
 export default mongoose.model("User", userSchema);

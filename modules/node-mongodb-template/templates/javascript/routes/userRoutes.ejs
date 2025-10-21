@@ -1,13 +1,27 @@
 import express from "express";
-import { getUsers, createUser, getUser, deleteUser, updateUser } from "../controllers/userController.js";
+import {
+getUsers,
+createUser,
+getUser,
+deleteUser,
+updateUser,
+} from "../controllers/userController.js";
 
 const router = express.Router();
 
-// defined API routes
+// Create new user
 router.post("/", createUser);
+
+// Get all users
 router.get("/", getUsers);
+
+// Get single user by ID
 router.get("/:id", getUser);
+
+// Update user (use PATCH for partial updates, PUT for full)
 router.patch("/:id", updateUser);
+
+// Delete user
 router.delete("/:id", deleteUser);
 
 export default router;

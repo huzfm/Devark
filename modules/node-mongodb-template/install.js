@@ -140,7 +140,7 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
   }
 
   // 📦 Step 11: Install dependencies
-  const deps = ["express", "mongoose", "morgan", "dotenv"];
+  const deps = ["express", "mongoose", "morgan", "dotenv","helmet","cors"];
   const devDeps = isTypeScript
     ? [
         "typescript",
