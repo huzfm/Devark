@@ -1,4 +1,4 @@
-#  Devark — The Backend Scafolding CLI
+#  Devark — The Backend Scaffolding CLI
 
 > **Like shadcn/ui, but for backend development.**  
 > Scaffold modern backend features instantly with modular, production-ready templates in JavaScript or TypeScript.
