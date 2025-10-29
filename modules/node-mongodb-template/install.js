@@ -41,8 +41,7 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
   );
 
   // 🔍 Step 3: Detect package manager
-  const packageManager = "pnpm";
-  //   const packageManager = detectByCommand();
+    const packageManager = detectByCommand();
   console.log(
     `📦 Using \x1b[1m\x1b[36m${packageManager}\x1b[0m as package manager`
   );
@@ -71,6 +70,11 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
   renderTemplate(
     path.join(templatesDir, "env.example.ejs"),
     path.join(targetPath, ".env.example"),
+    {}
+  );
+  renderTemplate(
+    path.join(templatesDir, "gitignore.ejs"),
+    path.join(targetPath, ".gitignore"),
     {}
   );
 

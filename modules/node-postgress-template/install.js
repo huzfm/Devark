@@ -84,6 +84,11 @@ export default async function runNodePostgresGenerator(targetPath) {
     path.join(targetPath, ".env.example"),
     {}
   );
+  renderTemplate(
+    path.join(templatesDir, "gitignore.ejs"),
+    path.join(targetPath, ".gitignore"),
+    {}
+  );
 
   renderTemplate(
     path.join(
