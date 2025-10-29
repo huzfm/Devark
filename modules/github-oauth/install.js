@@ -18,15 +18,17 @@ const __dirname = path.dirname(__filename);
 
 export default async function installGithubOAuth(targetPath) {
   if (!isValidNodeProject(targetPath)) {
-    console.error(
-      "❌ Not a valid Node.js project (missing package.json). Aborting."
-    );
+  
+    log.error(
+      "Not a valid Node.js project . Aborting."
+    )
     return;
   }
 
-  console.log(
-    "\x1b[1m\x1b[32mInstalling GitHub OAuth to your project. Please read the instructions carefully.\x1b[0m"
+  log.info(
+    "Installing GitHub OAuth to your project. Please read the instructions carefully."
   );
+  
 
   // Detect package manager
   const packageManager = detectPackageManager(targetPath);
@@ -68,15 +70,15 @@ export default async function installGithubOAuth(targetPath) {
       if (tsFiles.length > 0) {
         entryFile = path.join("src", tsFiles[0]);
         appPath = path.join(targetPath, entryFile);
-        console.log(`ℹ️ TypeScript entry file auto-detected: ${entryFile}`);
+        log.detect(` TypeScript entry file auto-detected: ${entryFile}`);
       }
     }
   }
 
   // Ensure entry file exists
   if (!fs.existsSync(appPath)) {
-    console.error(
-      `❌ Entry file ${entryFile} not found in ${targetPath}. Aborting installation.`
+    log.error(
+      ` Entry file ${entryFile} not found in ${targetPath}. Aborting installation.`
     );
     return;
   }
@@ -135,7 +137,7 @@ export default async function installGithubOAuth(targetPath) {
   try {
     ensureAppJsHasGithubOAuthSetup(appPath, language);
   } catch (err) {
-    console.error("❌ Failed to inject Github OAuth setup:", err.message);
+    log.error(" Failed to inject Github OAuth setup:", err.message);
     return;
   }
 
@@ -185,8 +187,8 @@ export default async function installGithubOAuth(targetPath) {
   ) {
     log.detect("env updated with the credentials you provided");
   } else {
-    console.log("\x1b[33m%s\x1b[0m", ".env created with sample values.");
+    log.success(".env created with sample values.");
   }
 
-  console.log("\x1b[1m\x1b[92m%s\x1b[0m", "GITHUB OAuth setup complete!");
+  log.bigSuccess("Github OAuth setup complete!");
 }
