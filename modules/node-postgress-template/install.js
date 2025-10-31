@@ -7,14 +7,14 @@ import {
   installDepsWithChoice,
   detectByCommand,
 } from "../../utils/packageManager.js";
-
+import { log } from "../../utils/moduleUtils.js";
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function runNodePostgresGenerator(targetPath) {
-  console.log(
-    "\x1b[1m\x1b[32m🚀 Setting up Node.js + PostgreSQL + Prisma project...\x1b[0m"
+  log.info(
+    "Setting up Node.js + PostgreSQL + Prisma project"
   );
 
   // Ask for language choice
@@ -30,7 +30,7 @@ export default async function runNodePostgresGenerator(targetPath) {
 
   // Detect package manager automatically
   const packageManager = detectByCommand();
-  console.log(`📦 Using package manager: ${packageManager}`);
+  log.detect(` Using package manager: ${packageManager}`);
 
   // === Dependencies ===
   const deps = ["express", "@prisma/client", "dotenv", "morgan"];
@@ -143,13 +143,14 @@ export default async function runNodePostgresGenerator(targetPath) {
   }
 
   // === Done ===
-  console.log(
+  log.bigSuccess(
     "\x1b[1m\x1b[32m✅ Node.js + PostgreSQL + Prisma project setup completed!\x1b[0m\n" +
       "📄 Please read the Instructions.md file for help on how to run and use your project."
   );
+  
 
-  console.log("\x1b[1m\x1b[32m✅ Run the following commands:\x1b[0m\n");
-  console.log("\x1b[36m npx prisma generate\x1b[0m");
-  console.log("\x1b[36m npx prisma migrate dev --name init\x1b[0m\n");
-  console.log("\x1b[33m Once done, you're all set! \x1b[0m");
+  log.detect("Run the following commands");
+  log.detect("npx prisma generate");
+  log.detect("npx prisma migrate dev --name init");
+  log.info("Once done, you're all set!");
 }

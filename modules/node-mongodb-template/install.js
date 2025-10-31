@@ -35,15 +35,15 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
   }
 
   log.bigSuccess(
-    `🚀 Setting up Node.js + MongoDB project in ${
+    ` Setting up Node.js + MongoDB project in ${
       isTypeScript ? "TypeScript" : "JavaScript"
     }`
   );
 
   // 🔍 Step 3: Detect package manager
     const packageManager = detectByCommand();
-  console.log(
-    `📦 Using \x1b[1m\x1b[36m${packageManager}\x1b[0m as package manager`
+  log.detect(
+    `Using ${packageManager} as package manager`
   );
 
   // 🧩 Step 4: Define target source path
@@ -168,7 +168,7 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
   }
 
   log.bigSuccess(
-    `✅ Node.js + MongoDB ${isTypeScript ? "TypeScript" : "JavaScript"} project setup completed!\n` +
-      `📄 Please read the Instructions.md file for help on how to run and use your project.`
+    ` Node.js + MongoDB ${isTypeScript ? "TypeScript" : "JavaScript"} project setup completed!\n` +
+      `Please read the Instructions.md file for help on how to run and use your project.`
   );
 }
