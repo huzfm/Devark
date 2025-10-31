@@ -39,7 +39,7 @@ export function installDependencies(targetPath, dependencies) {
             bun: `bun add ${dependencies.join(' ')}`,
       };
 
-      console.log(`📦 Installing dependencies using \x1b[1m\x1b[36m${packageManager}\x1b[0m`);
+      console.log(` Installing dependencies using \x1b[1m\x1b[36m${packageManager}\x1b[0m`);
       execSync(commands[packageManager], { cwd: targetPath, stdio: 'inherit' });
 }
 
@@ -73,7 +73,7 @@ export async function installDepsWithChoice(targetPath, dependencies, packageMan
             return false;
       }
 
-      console.log(`📦 Installing dependencies using ${packageManager}...`);
+      console.log(` Installing dependencies using ${packageManager}...`);
       execSync(commands[packageManager], { cwd: targetPath, stdio: "inherit" });
       console.log("✅ Dependencies installed successfully!");
       return true;

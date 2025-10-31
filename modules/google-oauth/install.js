@@ -13,6 +13,7 @@ import {
 } from "../../utils/packageManager.js";
 import { injectEnvVars } from "../../utils/injectEnvVars.js";
 import { ensureAppJsHasGoogleOAuthSetup } from './utils/ensureAppJsHasOAuthSetup.js';
+import { log } from "../../utils/moduleUtils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,16 +21,21 @@ const __dirname = path.dirname(__filename);
 export default async function runGoogleOAuthGenerator(targetPath) {
       // 1️⃣ Validate Node project
       if (!isValidNodeProject(targetPath)) {
-            console.error("❌ Not a valid Node.js project (missing package.json). Aborting.");
+            log.error(
+                  "Not a valid Node.js project . Aborting."
+                );
             return;
       }
+       log.info(
+          "Installing Google OAuth to your project. Please read the instructions carefully."
+        );
 
       // 2️⃣ Detect package manager
       const packageManager = detectPackageManager(targetPath);
       if (packageManager)
-            console.log(` ${packageManager} detected`);
+            log.detect(` ${packageManager} detected`);
       else
-            console.warn(" Could not detect package manager.");
+            log.error(" Could not detect package manager.");
 
       // 3️⃣ Ask for JS/TS
       const { language } = await inquirer.prompt([{
@@ -58,13 +64,13 @@ export default async function runGoogleOAuthGenerator(targetPath) {
                   if (tsFiles.length > 0) {
                         entryFile = path.join("src", tsFiles[0]);
                         appPath = path.join(targetPath, entryFile);
-                        console.log(`ℹ️ TypeScript entry file auto-detected: ${entryFile}`);
+                        log.detect(`ℹ️ TypeScript entry file auto-detected: ${entryFile}`);
                   }
             }
       }
 
       if (!fs.existsSync(appPath)) {
-            console.error(`❌ Entry file "${entryFile}" not found. Aborting.`);
+            log.error(` Entry file "${entryFile}" not found. Aborting.`);
             return;
       }
 
@@ -99,7 +105,7 @@ export default async function runGoogleOAuthGenerator(targetPath) {
       try {
             ensureAppJsHasGoogleOAuthSetup(appPath, language);
       } catch (err) {
-            console.error("❌ Failed to inject Google OAuth setup:", err.message);
+            log.error("Failed to inject Google OAuth setup:", err.message);
             return;
       }
 
@@ -128,19 +134,29 @@ export default async function runGoogleOAuthGenerator(targetPath) {
       ]);
 
       // Only inject variables that the user provided
-      const envVars = {};
-      if (creds.GOOGLE_CLIENT_ID) envVars.GOOGLE_CLIENT_ID = creds.GOOGLE_CLIENT_ID;
-      if (creds.GOOGLE_CLIENT_SECRET) envVars.GOOGLE_CLIENT_SECRET = creds.GOOGLE_CLIENT_SECRET;
-      if (creds.GOOGLE_CALLBACK_URL) envVars.GOOGLE_CALLBACK_URL = creds.GOOGLE_CALLBACK_URL;
-      if (creds.SESSION_SECRET) envVars.SESSION_SECRET = creds.SESSION_SECRET;
+      const envVars = {
+           GOOGLE_CLIENT_ID: creds.GITHUB_CLIENT_ID || "your-client-id",
+    GOOGLE_CLIENT_SECRET: creds.GITHUB_CLIENT_SECRET || "your-client-secret",
+    GOOGLE_CALLBACK_URL:
+      creds.GOOGLE_CALLBACK_URL || "http://localhost:3000/auth/google/callback",
+    SESSION_SECRET: creds.SESSION_SECRET || "your-session-secret",
+      };
+  
+  // Inject env vars
+  injectEnvVars(targetPath, envVars);
 
-      if (Object.keys(envVars).length > 0) {
-            injectEnvVars(targetPath, envVars);
-            console.log("\x1b[32m%s\x1b[0m", " .env updated with provided credentials");
-      } else {
-            console.log("\x1b[31m%s\x1b[0m", " No credentials provided. .env was not modified.");
-      }
+  // Notify user about .env
+  if (
+    creds.GOOGLE_CLIENT_ID ||
+    creds.GOOGLE_CLIENT_SECRET ||
+    creds.GOOGLE_CALLBACK_URL ||
+    creds.SESSION_SECRET
+  ) {
+    log.detect("env updated with the credentials you provided");
+  } else {
+    log.success(".env created with sample values.");
+  }
 
-      console.log("\x1b[1m\x1b[92m%s\x1b[0m", "Google OAuth setup complete!");
-
+  log.bigSuccess("Google OAuth setup complete!");
 }
+
