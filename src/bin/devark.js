@@ -15,7 +15,7 @@ import { showDevarkLogo } from '../utils/logo.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const packageJson = JSON.parse(readFileSync(path.join(__dirname, '../package.json'), 'utf-8')); ``
+const packageJson = JSON.parse(readFileSync(path.join(__dirname, '../../package.json'), 'utf-8'));
 
 const program = new Command();
 

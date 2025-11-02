@@ -5,10 +5,10 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "devark": "bin/devark.js"
+    "devark": "src/bin/devark.js"
   },
   "scripts": {
-    "start": "node ./bin/devark.js"
+    "start": "node ./src/bin/devark.js"
   },
   "keywords": [
     "backend",
