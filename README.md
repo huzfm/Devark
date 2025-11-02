@@ -87,28 +87,44 @@ devark create node-postgres
 ##  Project Structure
 
 ```
-├── bin/                  # CLI entry point
-│   └── devark.js
-├── modules/              # Feature modules
-│   ├── google-oauth/
-│   ├── github-oauth/
-│   ├── resend-otp/
-│   └── node-mongodb-template
-│   └── node-postgres-template
-├── utils/                # Shared helpers
-│   ├── createFullAppJs.js
-│   ├── injectEnvVars.js
-│   └── ensureAppJsHasOAuthSetup.js
+devark/
+│── documentation/
+├── src/
+│   ├── bin/                     # CLI entry point (executables)
+│   │   └── devark.js
+│   ├── modules/                 # Feature modules (pluggable)
+│   │   ├── google-oauth/
+│   │   │   ├── templates/
+│   │   │   │    ├── javascript/
+│   │   │   │    ├── typescript/
+│   │   │   ├── install.js
+│   │   │   └── utils/
+│   │   ├── github-oauth/
+│   │   ├── resend-otp/
+│   │   ├── node-mongodb-template/
+│   │   └── node-postgres-template/
+│   │
+│   ├── utils/                   # Shared helpers
+│   │   ├── filePaths.js
+│   │   ├── injectEnvVars.js
+│   │   ├── moduleUtils.js
+│   │   ├── logo.js
+│   │   └── PackageManager.js
 ├── package.json
-└── README.md
+├── README.md
+├── LICENSE
+└── .gitignore
+
 ```
 
 ##  Development
 
 Clone and install dependencies:
 
+Fork this Repo:
+
 ```bash
-git clone https://github.com/huzfm/Devark.git
+git clone https://github.com/username/Devark.git
 cd Devark
 pnpm install
 ```
