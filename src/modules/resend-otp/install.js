@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import inquirer from "inquirer";
 import { fileURLToPath } from "url";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
 import {
@@ -12,44 +11,57 @@ import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup.js";
 import { log } from "../../utils/moduleUtils.js";
 import { ensureNodeProject } from "../../utils/validProject.js";
 
+//    Import from Clack
+import { select, text, intro, outro, spinner, cancel } from "@clack/prompts";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function installOtp(targetPath) {
+  log.success(" Resend OTP Module Setup");
+
   // 1️⃣ Ensure project exists or create one
   const { success, pkgManager } = await ensureNodeProject(targetPath);
-  if (!success) return;
+  if (!success) {
+    outro("Aborted: Not a valid Node.js project.");
+    return;
+  }
 
-  log.info(
-    "Installing Resend OTP to your project. Please read the instructions carefully."
-  );
+  log.info("Installing Resend OTP to your project...");
 
   // 2️⃣ Detect or reuse package manager
   const packageManager = pkgManager || detectPackageManager(targetPath);
-  if (packageManager) log.detect(` ${packageManager} detected`);
-  else log.detect(" Could not detect package manager.");
+  if (packageManager) {
+    log.detect(` ${packageManager} detected`);
+  } else {
+    log.detect(" Could not detect package manager.");
+  }
 
-  // 3️⃣ Ask for JavaScript / TypeScript
-  const { language } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "language",
-      message: "Which version do you want to add?",
-      choices: ["JavaScript", "TypeScript"],
-      default: "JavaScript",
-    },
-  ]);
+  // 3️⃣ Ask for JS / TS
+  const language = await select({
+    message: "Which version do you want to add for this module?",
+    options: [
+      { label: "JavaScript", value: "JavaScript" },
+      { label: "TypeScript", value: "TypeScript" },
+    ],
+    initialValue: "JavaScript",
+  });
+  if (language === cancel) {
+    outro("Cancelled by user.");
+    return;
+  }
 
-  // 4️⃣ Determine entry file path
+  // 4️⃣ Entry file
   const defaultEntry = language === "TypeScript" ? "src/app.ts" : "app.js";
-  let { entryFile } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "entryFile",
-      message: "Enter your project entry file (relative to root):",
-      default: defaultEntry,
-    },
-  ]);
+  const entryFile = await text({
+    message: "Enter your project entry file (relative to root):",
+    placeholder: defaultEntry,
+    initialValue: defaultEntry,
+  });
+  if (entryFile === cancel) {
+    outro("Cancelled by user.");
+    return;
+  }
 
   let appPath = path.join(targetPath, entryFile);
 
@@ -67,23 +79,29 @@ export default async function installOtp(targetPath) {
   }
 
   if (!fs.existsSync(appPath)) {
-    log.error(`❌ Entry file "${entryFile}" not found. Aborting.`);
+    log.error(` Entry file "${entryFile}" not found. Aborting.`);
+    outro("Please create the entry file and run again.");
     return;
   }
 
-  // 5️⃣ Ask for environment variables (Resend credentials)
-  const creds = await inquirer.prompt([
-    {
-      type: "input",
-      name: "apiKey",
-      message: "Enter your Resend API Key (leave empty for sample):",
-    },
-    {
-      type: "input",
-      name: "fromEmail",
-      message: "Enter your FROM email address (leave empty for sample):",
-    },
-  ]);
+  // 5️⃣ Ask for credentials
+  const apiKey = await text({
+    message: "Enter your Resend API Key (leave empty for sample):",
+    placeholder: "sample-resend-api-key",
+  });
+  if (apiKey === cancel) {
+    outro("Cancelled by user.");
+    return;
+  }
+
+  const fromEmail = await text({
+    message: "Enter your FROM email address (leave empty for sample):",
+    placeholder: "onboarding@resend.dev",
+  });
+  if (fromEmail === cancel) {
+    outro("Cancelled by user.");
+    return;
+  }
 
   // 6️⃣ Install dependencies
   const runtimeDeps = ["resend", "express", "express-rate-limit"];
@@ -92,21 +110,29 @@ export default async function installOtp(targetPath) {
       ? ["typescript", "ts-node", "@types/node", "@types/express"]
       : [];
 
-  if (packageManager) {
+  const spin = spinner();
+  spin.start("Installing dependencies...");
+  try {
     await installDepsWithChoice(targetPath, runtimeDeps, packageManager, false);
     if (devDeps.length > 0)
       await installDepsWithChoice(targetPath, devDeps, packageManager, true);
+    spin.stop("Dependencies installed successfully.");
+  } catch (err) {
+    spin.stop("Failed to install dependencies.");
+    log.error(err.message);
+    return;
   }
 
   // 7️⃣ Patch entry file
   try {
     ensureAppJsHasOtpSetup(appPath, language);
   } catch (err) {
-    console.error("❌ Failed to inject OTP setup:", err.message);
+    log.error(`Failed to inject OTP setup: ${err.message}`);
+    outro("Aborting due to errors.");
     return;
   }
 
-  // 8️⃣ Generate controllers, routes, and middleware
+  // 8️⃣ Generate controllers/routes/middleware
   const baseDir =
     language === "TypeScript" ? path.join(targetPath, "src") : targetPath;
 
@@ -120,53 +146,42 @@ export default async function installOtp(targetPath) {
 
   const templateDir = path.join(__dirname, "templates", language.toLowerCase());
 
-  // 🧩 Controllers
   renderTemplate(
     path.join(templateDir, "controllers", "otpFunctions.ejs"),
     path.join(
       controllersDir,
       `otpFunctions.${language === "TypeScript" ? "ts" : "js"}`
-    ),
-    {}
+    )
   );
 
   renderTemplate(
     path.join(templateDir, "controllers", "otp.ejs"),
-    path.join(controllersDir, `otp.${language === "TypeScript" ? "ts" : "js"}`),
-    {}
+    path.join(controllersDir, `otp.${language === "TypeScript" ? "ts" : "js"}`)
   );
 
-  // 🧩 Routes
   renderTemplate(
     path.join(templateDir, "routes", "otpRoutes.ejs"),
-    path.join(
-      routesDir,
-      `otpRoutes.${language === "TypeScript" ? "ts" : "js"}`
-    ),
-    {}
+    path.join(routesDir, `otpRoutes.${language === "TypeScript" ? "ts" : "js"}`)
   );
 
-  // 🧩 Middleware
   renderTemplate(
     path.join(templateDir, "middleware", "ratelimit.ejs"),
     path.join(
       middlewareDir,
       `ratelimit.${language === "TypeScript" ? "ts" : "js"}`
-    ),
-    {}
+    )
   );
 
-  // 9️⃣ Inject .env values
+  // 9️⃣ Inject env vars
   const envVars = {
-    RESEND_API_KEY: creds.apiKey || "sample-resend-api-key",
-    FROM_EMAIL: creds.fromEmail || "onboarding@resend.dev",
+    RESEND_API_KEY: apiKey || "sample-resend-api-key",
+    FROM_EMAIL: fromEmail || "onboarding@resend.dev",
   };
   injectEnvVars(targetPath, envVars);
 
-  if (creds.apiKey || creds.fromEmail)
-    log.detect("env updated with the credentials you provided");
-  else log.success(".env created with sample values.");
+  if (apiKey || fromEmail)
+    log.detect("env updated with credentials you provided");
+  else log.detect(".env created with sample values.");
 
-  // ✅ Done
-  log.bigSuccess("Resend OTP setup complete!");
+  outro("Resend OTP setup complete!");
 }

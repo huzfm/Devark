@@ -7,10 +7,10 @@ import { installDepsWithChoice } from "./packageManager.js";
 
 /* Colored logger */
 export const log = {
-info: (msg) => console.log(`\x1b[1m\x1b[32m  ${msg}\x1b[0m`),
+  info: (msg) => console.log(`\x1b[1m\x1b[32m${msg}\x1b[0m`),
   success: (msg) => console.log(`\x1b[32m✔ ${msg}\x1b[0m`),
-  warn: (msg) => console.log(`\x1b[33m⚠ ${msg}\x1b[0m`),
-  error: (msg) => console.log(`\x1b[1m\x1b[31m❌ ${msg}\x1b[0m`),
+  warn: (msg) => console.log(`\x1b[1m\x1b[31m${msg}\x1b[0m`),
+  error: (msg) => console.log(`\x1b[1m\x1b[31m${msg}\x1b[0m`),
   bigSuccess: (msg) => console.log(`\x1b[1m\x1b[92m${msg}\x1b[0m`),
   detect: (msg) => console.log(`\x1b[1m\x1b[34m✔ ${msg}\x1b[0m`),
 };
