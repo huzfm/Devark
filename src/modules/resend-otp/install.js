@@ -5,39 +5,29 @@ import { fileURLToPath } from "url";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
 import {
   installDepsWithChoice,
-  isValidNodeProject,
   detectPackageManager,
 } from "../../utils/packageManager.js";
 import { injectEnvVars } from "../../utils/injectEnvVars.js";
 import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup.js";
 import { log } from "../../utils/moduleUtils.js";
+import { ensureNodeProject } from "../../utils/validProject.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function installOtp(targetPath) {
-  // 1️⃣ Validate Node project
-  if (!isValidNodeProject(targetPath)) {
-     log.error(
-        "Not a valid Node.js project. Aborting."
-      )
-    return;
-  }
+  // 1️⃣ Ensure project exists or create one
+  const { success, pkgManager } = await ensureNodeProject(targetPath);
+  if (!success) return;
 
   log.info(
     "Installing Resend OTP to your project. Please read the instructions carefully."
   );
-  
-  // 2️⃣ Detect package manager
-  const packageManager = detectPackageManager(targetPath);
-  if (packageManager) 
-    {
-      log.detect(` ${packageManager} detected`);
-    }
-  else
-    {
-      log.detect(" Could not detect package manager.");
-    } 
+
+  // 2️⃣ Detect or reuse package manager
+  const packageManager = pkgManager || detectPackageManager(targetPath);
+  if (packageManager) log.detect(` ${packageManager} detected`);
+  else log.detect(" Could not detect package manager.");
 
   // 3️⃣ Ask for JavaScript / TypeScript
   const { language } = await inquirer.prompt([
@@ -82,10 +72,21 @@ export default async function installOtp(targetPath) {
   }
 
   // 5️⃣ Ask for environment variables (Resend credentials)
-  
+  const creds = await inquirer.prompt([
+    {
+      type: "input",
+      name: "apiKey",
+      message: "Enter your Resend API Key (leave empty for sample):",
+    },
+    {
+      type: "input",
+      name: "fromEmail",
+      message: "Enter your FROM email address (leave empty for sample):",
+    },
+  ]);
 
   // 6️⃣ Install dependencies
-  const runtimeDeps = ["resend", "express",'express-rate-limit'];
+  const runtimeDeps = ["resend", "express", "express-rate-limit"];
   const devDeps =
     language === "TypeScript"
       ? ["typescript", "ts-node", "@types/node", "@types/express"]
@@ -155,35 +156,17 @@ export default async function installOtp(targetPath) {
     {}
   );
 
-  const creds = await inquirer.prompt([
-    {
-      type: "input",
-      name: "apiKey",
-      message: "Enter your Resend API Key (leave empty for sample):",
-    },
-    {
-      type: "input",
-      name: "fromEmail",
-      message: "Enter your FROM email address (leave empty for sample):",
-    },
-  ]);
-
-  // Default fallback values
+  // 9️⃣ Inject .env values
   const envVars = {
-    RESEND_API_KEY : creds.apiKey|| "sample-resend-api-key",
-    FROM_EMAIL :creds.fromEmail || "onboarding@resend.dev",
+    RESEND_API_KEY: creds.apiKey || "sample-resend-api-key",
+    FROM_EMAIL: creds.fromEmail || "onboarding@resend.dev",
   };
-
-  // Inject .env values
   injectEnvVars(targetPath, envVars);
- 
 
-if (creds.apiKey || creds.fromEmail) {
-  log.detect("env updated with the credentials you provided");
-} else {
-  log.success(".env created with sample values.");
-}
+  if (creds.apiKey || creds.fromEmail)
+    log.detect("env updated with the credentials you provided");
+  else log.success(".env created with sample values.");
 
-
+  // ✅ Done
   log.bigSuccess("Resend OTP setup complete!");
 }

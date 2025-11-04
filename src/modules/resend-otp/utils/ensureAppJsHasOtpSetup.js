@@ -18,12 +18,7 @@ export function ensureAppJsHasOtpSetup(appPath, language = "JavaScript") {
   let content = fs.readFileSync(appPath, "utf-8");
 
   // ✅ Imports needed for OTP setup
-  const requiredImports = [
-    isTS
-      ? "import express, { Application } from 'express'"
-      : "import express from 'express'",
-    `import otpRoutes from './routes/otpRoutes.js'`,
-  ];
+  const requiredImports = [`import otpRoutes from './routes/otpRoutes.js'`];
 
   // ✅ Middleware setup
   const requiredMiddleware = [
