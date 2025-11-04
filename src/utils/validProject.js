@@ -74,7 +74,7 @@ export async function ensureNodeProject(targetPath) {
     {
       type: "input",
       name: "entryFile",
-      message: "Enter entry file path (relative to project root):",
+      message: "What do you want name your entry file (app.js, index.js):",
       default: defaultEntry,
     },
   ]);

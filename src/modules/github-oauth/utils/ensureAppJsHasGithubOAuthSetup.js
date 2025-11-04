@@ -22,9 +22,6 @@ export function ensureAppJsHasGithubOAuthSetup(
 
   const requiredImports = [
     "import 'dotenv/config'",
-    isTS
-      ? "import express, { Application } from 'express'"
-      : "import express from 'express'",
     "import session from 'express-session'",
     "import passport from 'passport'",
     "import githubAuthRoutes from './routes/githubAuthRoutes.js'",
