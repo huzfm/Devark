@@ -79,7 +79,6 @@ export async function installDepsWithChoice(
     return false;
   }
 
-  log.info(` Installing dependencies using ${packageManager}...`);
   execSync(commands[packageManager], { cwd: targetPath, stdio: "inherit" });
   return true;
 }

@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import inquirer from "inquirer";
+import { select, intro, outro, cancel } from "@clack/prompts";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
 import {
   installDepsWithChoice,
@@ -14,6 +14,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function runNodeMongoGenerator(targetPath, options = {}) {
+  intro("🧩 Node.js + MongoDB Project Setup");
+
   // 🧠 Step 1: Detect if --typescript flag is provided
   let isTypeScript =
     options.typescript ||
@@ -22,15 +24,20 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
 
   // ❓ Step 2: Prompt only if no flag provided
   if (!isTypeScript) {
-    const { language } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "language",
-        message: "Which language do you want to use?",
-        choices: ["JavaScript", "TypeScript"],
-        default: "JavaScript",
-      },
-    ]);
+    const language = await select({
+      message: "Which language do you want to use?",
+      options: [
+        { label: "JavaScript", value: "JavaScript" },
+        { label: "TypeScript", value: "TypeScript" },
+      ],
+      initialValue: "JavaScript",
+    });
+
+    if (language === cancel) {
+      outro("Cancelled by user.");
+      return;
+    }
+
     isTypeScript = language === "TypeScript";
   }
 
@@ -41,10 +48,8 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
   );
 
   // 🔍 Step 3: Detect package manager
-    const packageManager = detectByCommand();
-  log.detect(
-    `Using ${packageManager} as package manager`
-  );
+  const packageManager = detectByCommand();
+  log.detect(`Using ${packageManager} as package manager`);
 
   // 🧩 Step 4: Define target source path
   const srcPath = isTypeScript ? path.join(targetPath, "src") : targetPath;
@@ -144,7 +149,7 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
   }
 
   // 📦 Step 11: Install dependencies
-  const deps = ["express", "mongoose", "morgan", "dotenv","helmet","cors"];
+  const deps = ["express", "mongoose", "morgan", "dotenv", "helmet", "cors"];
   const devDeps = isTypeScript
     ? [
         "typescript",
@@ -159,7 +164,7 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
 
   try {
     // Install main dependencies
-    log.info(" Installing dependencies...");
+    log.info(` Installing dependencies using ${packageManager}...`);
     await installDepsWithChoice(targetPath, deps, packageManager);
     await installDepsWithChoice(targetPath, devDeps, packageManager, true);
   } catch (error) {
@@ -167,8 +172,10 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     return;
   }
 
-  log.bigSuccess(
-    ` Node.js + MongoDB ${isTypeScript ? "TypeScript" : "JavaScript"} project setup completed!\n` +
-      `Please read the Instructions.md file for help on how to run and use your project.`
+  outro(`Node.js + MongoDB ${isTypeScript ? "TypeScript" : "JavaScript"}`);
+
+  outro("project setup completed.");
+  outro(
+    "Please read the Instructions.md file for help on how to run and use your project"
   );
 }

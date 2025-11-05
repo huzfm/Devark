@@ -23,7 +23,7 @@ export default async function installOtp(targetPath) {
   // 1️⃣ Ensure project exists or create one
   const { success, pkgManager } = await ensureNodeProject(targetPath);
   if (!success) {
-    outro("Aborted: Not a valid Node.js project.");
+    outro("Aborted: Not a valid project.");
     return;
   }
 
