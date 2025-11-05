@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import inquirer from "inquirer";
+import { select, intro, outro, cancel } from "@clack/prompts";
 import { ensureDir, renderTemplate } from "../../utils/filePaths.js";
 import {
   installDepsWithChoice,
@@ -17,6 +17,8 @@ export default async function runNodePostgresGenerator(
   targetPath,
   options = {}
 ) {
+  intro("🧩 Node.js + PostgreSQL + Prisma Project Setup");
+
   // 🧠 Step 1: Detect if --typescript flag is provided
   let isTypeScript =
     options.typescript ||
@@ -25,15 +27,20 @@ export default async function runNodePostgresGenerator(
 
   // ❓ Step 2: Prompt if no flag provided
   if (!isTypeScript) {
-    const { language } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "language",
-        message: "Which language do you want to use?",
-        choices: ["JavaScript", "TypeScript"],
-        default: "JavaScript",
-      },
-    ]);
+    const language = await select({
+      message: "Which language do you want to use?",
+      options: [
+        { label: "JavaScript", value: "JavaScript" },
+        { label: "TypeScript", value: "TypeScript" },
+      ],
+      initialValue: "JavaScript",
+    });
+
+    if (language === cancel) {
+      outro("Cancelled by user.");
+      return;
+    }
+
     isTypeScript = language === "TypeScript";
   }
 
@@ -145,7 +152,7 @@ export default async function runNodePostgresGenerator(
   }
 
   try {
-    log.info(" Installing dependencies...");
+    log.info(` Installing dependencies using ${packageManager}...`);
     await installDepsWithChoice(targetPath, deps, packageManager);
     await installDepsWithChoice(targetPath, devDeps, packageManager, true);
   } catch (error) {
@@ -153,12 +160,12 @@ export default async function runNodePostgresGenerator(
     return;
   }
 
-  // ✅ Step 13: Finish
-  log.bigSuccess(
-    `✅ Node.js + PostgreSQL + Prisma ${
-      isTypeScript ? "TypeScript" : "JavaScript"
-    } project setup completed!\n` +
-      `📄 Please read the Instructions.md file for details on how to run and use your project.`
+  outro(
+    `Node.js + PostgreSQL + Prisma ${isTypeScript ? "TypeScript" : "JavaScript"}`
+  );
+  outro("project setup completed.");
+  outro(
+    "Please read the Instructions.md file for help on how to run and use your project."
   );
 
   log.detect("Run the following commands:");
