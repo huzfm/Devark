@@ -104,7 +104,7 @@ export default async function installOtp(targetPath) {
   }
 
   // 6️⃣ Install dependencies
-  const runtimeDeps = ["resend", "express", "express-rate-limit"];
+  const runtimeDeps = ["resend", "express", "express-rate-limit", "dotenv"];
   const devDeps =
     language === "TypeScript"
       ? ["typescript", "ts-node", "@types/node", "@types/express"]
