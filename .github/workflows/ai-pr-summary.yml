@@ -48,7 +48,7 @@ jobs:
             "Code Diff:\n" + diff + "\n\n" +
             "Provide:\n" +
             "- Summary of changes\n" +
-            "- Why these changes were made\n" +
+            "- Why these changes were made\n";
 
           const response = await fetch(
             "https://api.groq.com/openai/v1/chat/completions",
@@ -91,7 +91,7 @@ jobs:
 
             const body =
               marker +
-              "\n## AI PR Summary\n\n" +
+              "\n## 🤖 AI PR Summary\n\n" +
               summary;
 
             const { data: comments } = await github.rest.issues.listComments({
