@@ -12,19 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ---------------------------------
       # Step 1: Checkout repository
+      # ---------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Step 2: Get PR diff
+      # ---------------------------------
+      # Step 2: Generate PR diff
+      # ---------------------------------
       - name: Get PR diff
         run: |
           git fetch origin pull/${{ github.event.pull_request.number }}/head:pr
           git diff origin/${{ github.event.pull_request.base.ref }}...pr > pr.diff
 
-      # Step 3: Generate AI summary with Groq
+      # ---------------------------------
+      # Step 3: Generate AI summary (Groq)
+      # ---------------------------------
       - name: Generate AI PR summary
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -34,18 +40,20 @@ jobs:
           node <<'EOF'
           import fs from "fs";
 
+          // Read diff (limit size to avoid token issues)
           const diff = fs.readFileSync("pr.diff", "utf8").slice(0, 12000);
 
+          // Build prompt safely (NO template literals)
           const prompt =
             "You are an expert software engineer.\n\n" +
-            "Summarize the following GitHub Pull Request clearly.\n\n" +
+            "Summarize the following GitHub Pull Request clearly for reviewers.\n\n" +
             "PR Title:\n" + process.env.PR_TITLE + "\n\n" +
             "PR Description:\n" + (process.env.PR_BODY || "No description provided.") + "\n\n" +
             "Code Diff:\n" + diff + "\n\n" +
             "Provide:\n" +
             "- Summary of changes\n" +
             "- Why these changes were made\n" +
-            "- Any risks, breaking changes, or review notes\n";
+            "- Any risks or breaking changes\n";
 
           const response = await fetch(
             "https://api.groq.com/openai/v1/chat/completions",
@@ -56,23 +64,30 @@ jobs:
                 "Content-Type": "application/json"
               },
               body: JSON.stringify({
-                model: "llama-3.1-70b-versatile",
-                messages: [{ role: "user", content: prompt }]
+                model: "llama-3.1-8b-instant",
+                messages: [
+                  { role: "user", content: prompt }
+                ]
               })
             }
           );
 
           const result = await response.json();
 
-          if (!result.choices || !result.choices.length) {
+          if (!result || !result.choices || !result.choices.length) {
             console.error("Invalid Groq response:", result);
             process.exit(1);
           }
 
-          fs.writeFileSync("summary.txt", result.choices[0].message.content);
+          fs.writeFileSync(
+            "summary.txt",
+            result.choices[0].message.content
+          );
           EOF
 
+      # ---------------------------------
       # Step 4: Post or update PR comment
+      # ---------------------------------
       - name: Post AI summary comment
         uses: actions/github-script@v7
         with:
@@ -82,10 +97,10 @@ jobs:
             const summary = fs.readFileSync("summary.txt", "utf8");
             const marker = "<!-- AI_PR_SUMMARY -->";
 
-            const body = `${marker}
-            ## 🤖 AI PR Summary
-
-            ${summary}`;
+            const body =
+              marker +
+              "\n## 🤖 AI PR Summary\n\n" +
+              summary;
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -93,8 +108,8 @@ jobs:
               issue_number: context.issue.number,
             });
 
-            const existing = comments.find(comment =>
-              comment.body && comment.body.includes(marker)
+            const existing = comments.find(c =>
+              c.body && c.body.includes(marker)
             );
 
             if (existing) {
