@@ -7,6 +7,12 @@ on:
       - synchronize
       - reopened
 
+# 🔐 REQUIRED PERMISSIONS (THIS FIXES THE 403 ERROR)
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   summarize:
     runs-on: ubuntu-latest
@@ -40,10 +46,8 @@ jobs:
           node <<'EOF'
           import fs from "fs";
 
-          // Read diff (limit size to avoid token issues)
           const diff = fs.readFileSync("pr.diff", "utf8").slice(0, 12000);
 
-          // Build prompt safely (NO template literals)
           const prompt =
             "You are an expert software engineer.\n\n" +
             "Summarize the following GitHub Pull Request clearly for reviewers.\n\n" +
