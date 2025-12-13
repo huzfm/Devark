@@ -1,0 +1,119 @@
+name: AI PR Labeler
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  labeler:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------
+      # Step 1: Checkout repository
+      # -----------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # -----------------------------
+      # Step 2: Get PR diff
+      # -----------------------------
+      - name: Get PR diff
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr
+          git diff origin/${{ github.event.pull_request.base.ref }}...pr > pr.diff
+
+      # -----------------------------
+      # Step 3: Ask Groq for labels
+      # -----------------------------
+      - name: Generate labels using AI
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          node <<'EOF'
+          import fs from "fs";
+
+          const diff = fs.readFileSync("pr.diff", "utf8").slice(0, 8000);
+
+          const prompt =
+            "You are a GitHub PR labeling assistant.\n\n" +
+            "Choose the most relevant labels for this pull request.\n\n" +
+            "Available labels:\n" +
+            "- feature\n" +
+            "- bug\n" +
+            "- refactor\n" +
+            "- docs\n" +
+            "- chore\n\n" +
+            "PR Title:\n" + process.env.PR_TITLE + "\n\n" +
+            "PR Description:\n" + (process.env.PR_BODY || "No description") + "\n\n" +
+            "Code Diff:\n" + diff + "\n\n" +
+            "Return ONLY a comma-separated list of labels.\n" +
+            "Example response: feature, refactor\n";
+
+          const response = await fetch(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Authorization": "Bearer " + process.env.GROQ_API_KEY,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [{ role: "user", content: prompt }]
+              })
+            }
+          );
+
+          const result = await response.json();
+
+          if (!result.choices || !result.choices.length) {
+            console.error("Invalid Groq response:", result);
+            process.exit(1);
+          }
+
+          const labels = result.choices[0].message.content
+            .toLowerCase()
+            .split(",")
+            .map(l => l.trim())
+            .filter(Boolean);
+
+          fs.writeFileSync("labels.json", JSON.stringify(labels));
+          EOF
+
+      # -----------------------------
+      # Step 4: Apply labels to PR
+      # -----------------------------
+      - name: Apply labels to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+
+            const labels = JSON.parse(
+              fs.readFileSync("labels.json", "utf8")
+            );
+
+            if (!labels.length) {
+              console.log("No labels suggested");
+              return;
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels,
+            });
