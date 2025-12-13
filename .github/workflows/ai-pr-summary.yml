@@ -49,7 +49,6 @@ jobs:
             "Provide:\n" +
             "- Summary of changes\n" +
             "- Why these changes were made\n" +
-            "- Any risks or breaking changes\n";
 
           const response = await fetch(
             "https://api.groq.com/openai/v1/chat/completions",
