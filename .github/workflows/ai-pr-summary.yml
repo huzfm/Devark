@@ -12,25 +12,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # -----------------------------
       # Step 1: Checkout repository
-      # -----------------------------
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # -----------------------------
-      # Step 2: Generate PR diff
-      # -----------------------------
+      # Step 2: Get PR diff
       - name: Get PR diff
         run: |
           git fetch origin pull/${{ github.event.pull_request.number }}/head:pr
           git diff origin/${{ github.event.pull_request.base.ref }}...pr > pr.diff
 
-      # -----------------------------
-      # Step 3: Call Groq AI
-      # -----------------------------
+      # Step 3: Generate AI summary with Groq
       - name: Generate AI PR summary
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -40,12 +34,11 @@ jobs:
           node <<'EOF'
           import fs from "fs";
 
-          // Read and trim diff to avoid token limits
           const diff = fs.readFileSync("pr.diff", "utf8").slice(0, 12000);
 
           const prompt =
             "You are an expert software engineer.\n\n" +
-            "Summarize the following GitHub Pull Request.\n\n" +
+            "Summarize the following GitHub Pull Request clearly.\n\n" +
             "PR Title:\n" + process.env.PR_TITLE + "\n\n" +
             "PR Description:\n" + (process.env.PR_BODY || "No description provided.") + "\n\n" +
             "Code Diff:\n" + diff + "\n\n" +
@@ -63,7 +56,7 @@ jobs:
                 "Content-Type": "application/json"
               },
               body: JSON.stringify({
-                model: "llama-3.1-70b-versatile"
+                model: "llama-3.1-70b-versatile",
                 messages: [{ role: "user", content: prompt }]
               })
             }
@@ -79,9 +72,7 @@ jobs:
           fs.writeFileSync("summary.txt", result.choices[0].message.content);
           EOF
 
-      # -----------------------------
-      # Step 4: Post / Update PR comment
-      # -----------------------------
+      # Step 4: Post or update PR comment
       - name: Post AI summary comment
         uses: actions/github-script@v7
         with:
