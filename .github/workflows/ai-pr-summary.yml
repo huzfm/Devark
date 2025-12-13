@@ -91,7 +91,7 @@ jobs:
 
             const body =
               marker +
-              "\n## 🤖 AI PR Summary\n\n" +
+              "\n## AI PR Summary\n\n" +
               summary;
 
             const { data: comments } = await github.rest.issues.listComments({
