@@ -1,0 +1,88 @@
+name: CLI Backward Compatibility Guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  cli-compat:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------
+      # Step 1: Checkout base branch
+      # -----------------------------
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Install dependencies (base)
+        run: npm install
+
+      - name: Capture base CLI help
+        run: |
+          node ./src/bin/devark.js --help > base-help.txt
+
+      # -----------------------------
+      # Step 2: Checkout PR branch
+      # -----------------------------
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (PR)
+        run: npm install
+
+      - name: Capture PR CLI help
+        run: |
+          node ./src/bin/devark.js --help > pr-help.txt
+
+      # -----------------------------
+      # Step 3: Compare outputs
+      # -----------------------------
+      - name: Detect breaking CLI changes
+        id: diff
+        run: |
+          diff base-help.txt pr-help.txt > cli-diff.txt || true
+
+      # -----------------------------
+      # Step 4: Warn if differences exist
+      # -----------------------------
+      - name: Comment warning on PR
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+
+            const diff = fs.readFileSync("cli-diff.txt", "utf8");
+
+            if (!diff.trim()) {
+              console.log("No CLI breaking changes detected.");
+              return;
+            }
+
+            const body = `
+            ⚠️ **Potential CLI Breaking Change Detected**
+
+            The CLI help output has changed in this PR.
+            This may indicate a breaking change for existing users.
+
+            **Diff:**
+            \`\`\`diff
+            ${diff.slice(0, 4000)}
+            \`\`\`
+
+            Please verify backward compatibility or document the change.
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
