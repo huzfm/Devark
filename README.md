@@ -1,4 +1,4 @@
-#  Devark — The Backend Scaffolding CLI
+#  Devark The Backend Scaffolding CLI
 
 > **Like shadcn/ui, but for backend development.**  
 > Scaffold modern backend features instantly with modular, production-ready templates in JavaScript or TypeScript.
@@ -74,12 +74,12 @@ devark add resend-otp
 
 ### Create a Node.js + MongoDB Backend
 ```bash
-devark create node-mongo
+devark add node-mongo
 ```
 
 ### Create a Node.js + PostgreSQL Backend
 ```bash
-devark create node-postgres
+devark add node-postgres
 ```
 
 ---
@@ -110,6 +110,7 @@ devark/
 │   │   ├── moduleUtils.js
 │   │   ├── logo.js
 │   │   └── PackageManager.js
+│   │   └── oauthSelector.js
 ├── package.json
 ├── README.md
 ├── LICENSE
@@ -133,8 +134,9 @@ pnpm install
 
 - **Language:** JavaScript
 - **Package Manager:** pnpm
-- **CLI Framework:** Commander.js + Inquirer.js
+- **CLI Framework:** Commander.js 
 - **Templating:** EJS
+- **Prompts:** @clack/prompts
 
 ---
 
