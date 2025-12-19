@@ -30,7 +30,7 @@
     "figlet": "^1.9.3",
     "fs-extra": "^11.3.2",
     "gradient-string": "^3.0.0",
-    "inquirer": "^12.10.0"
+    "inquirer": "^13.1.0"
   },
   "repository": {
     "type": "git",
