@@ -9,7 +9,7 @@ import {
 } from "../../utils/packageManager.js";
 import { log } from "../../utils/moduleUtils.js";
 
-// __dirname workaround
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -19,13 +19,13 @@ export default async function runNodePostgresGenerator(
 ) {
   intro("🧩 Node.js + PostgreSQL + Prisma Project Setup");
 
-  // 🧠 Step 1: Detect if --typescript flag is provided
+  
   let isTypeScript =
     options.typescript ||
     process.argv.includes("--typescript") ||
     process.argv.includes("--ts");
 
-  // ❓ Step 2: Prompt if no flag provided
+  
   if (!isTypeScript) {
     const language = await select({
       message: "Which language do you want to use?",
@@ -50,18 +50,18 @@ export default async function runNodePostgresGenerator(
     }`
   );
 
-  // 🔍 Step 3: Detect package manager
+  
   const packageManager = detectByCommand();
   log.detect(`Using ${packageManager} as package manager`);
 
-  // 🧩 Step 4: Define target source path
+  
   const srcPath = isTypeScript ? path.join(targetPath, "src") : targetPath;
 
-  // 📁 Step 5: Ensure required folders exist
+  
   const folders = ["prisma", "routes", "controllers", "utils"];
   folders.forEach((folder) => ensureDir(path.join(srcPath, folder)));
 
-  // 📄 Step 6: Define templates directory based on language
+  
   const templatesDir = path.join(
     __dirname,
     "templates",
@@ -70,7 +70,7 @@ export default async function runNodePostgresGenerator(
 
   const ext = isTypeScript ? "ts" : "js";
 
-  // ⚙️ Step 7: Generate main app files
+  
   renderTemplate(
     path.join(templatesDir, isTypeScript ? "app.ts.ejs" : "app.ejs"),
     path.join(srcPath, `app.${ext}`),
@@ -95,7 +95,7 @@ export default async function runNodePostgresGenerator(
     { isTypeScript }
   );
 
-  // 🧩 Step 8: Prisma setup
+  
   renderTemplate(
     path.join(templatesDir, "schema.prisma.ejs"),
     path.join(targetPath, "prisma/schema.prisma"),
@@ -108,7 +108,7 @@ export default async function runNodePostgresGenerator(
     {}
   );
 
-  // 🧩 Step 9: MVC structure
+  
   renderTemplate(
     path.join(templatesDir, "routes", `userRoutes.ejs`),
     path.join(srcPath, `routes/userRoutes.${ext}`),
@@ -121,14 +121,14 @@ export default async function runNodePostgresGenerator(
     {}
   );
 
-  // 📝 Step 10: Add Instructions
+  
   renderTemplate(
     path.join(templatesDir, "Instructions.ejs"),
     path.join(targetPath, "Instructions.md"),
     {}
   );
 
-  // ⚙️ Step 11: Render tsconfig.json (only for TS)
+  
   if (isTypeScript) {
     renderTemplate(
       path.join(templatesDir, "tsconfig.json.ejs"),
@@ -137,7 +137,7 @@ export default async function runNodePostgresGenerator(
     );
   }
 
-  // 📦 Step 12: Install dependencies
+  
   const deps = ["express", "@prisma/client", "dotenv", "morgan"];
   const devDeps = ["prisma", "nodemon"];
 

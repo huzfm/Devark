@@ -1,11 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-/**
- * Ensures entry file (app.js / app.ts / index.ts) has full Google OAuth setup.
- * ✅ Only modifies existing files — does NOT create new ones.
- * ✅ Works with any provided entry path.
- */
+
 export function ensureAppJsHasGoogleOAuthSetup(
   appPath,
   language = "JavaScript"
@@ -39,7 +35,7 @@ export function ensureAppJsHasGoogleOAuthSetup(
     "app.use('/', googleAuthRoutes)",
   ];
 
-  // ✅ If empty, write scaffold
+  
   if (!content.trim()) {
     const scaffold = `
 ${requiredImports.join(";\n")};
@@ -57,15 +53,15 @@ app.listen(3000, () => {
     return;
   }
 
-  // ✅ Merge into existing file
+  
 
   let lines = content.split("\n");
 
-  // Remove duplicate imports
+  
   const trimmedImports = requiredImports.map((imp) => imp.trim());
   lines = lines.filter((line) => !trimmedImports.includes(line.trim()));
 
-  // Prepend imports
+  
   lines = [...requiredImports, "", ...lines];
 
   // Ensure app initialization
@@ -89,7 +85,7 @@ app.listen(3000, () => {
     (line) => !mwKeywords.some((kw) => line.trim().startsWith(kw))
   );
 
-  // Insert required middleware
+  
   lines.splice(appIndex + 1, 0, ...requiredMiddleware, "");
 
   // Add listener if missing

@@ -6,14 +6,14 @@ import { dirname } from 'path';
 import { readFileSync } from 'fs';
 import path from 'path';
 
-// modules
+
 import googleAuth from '../modules/google-oauth/install.js';
 import addGithubOAuth from '../modules/github-oauth/install.js';
 import addOtp from '../modules/resend-otp/install.js';
 import nodemongo from '../modules/node-mongodb-template/install.js';
 import nodepostgres from '../modules/node-postgress-template/install.js';
 
-// utils
+
 import { showDevarkLogo } from '../utils/logo.js';
 import { oauthSelector } from '../utils/oauthSelector.js';
 
@@ -25,7 +25,7 @@ const packageJson = JSON.parse(
 
 const program = new Command();
 
-// Handle Ctrl+C gracefully
+
 process.on('SIGINT', () => {
   console.log('❌ Installation aborted.');
   process.exit(0);
@@ -34,7 +34,7 @@ process.on('SIGINT', () => {
 async function main() {
   const args = process.argv.slice(2);
 
-  // Show logo unless version
+  
   if (!(args.length && args[0] === '--version')) {
     await showDevarkLogo();
   }
@@ -44,7 +44,7 @@ async function main() {
     .description('Devark CLI - Modular backend scaffolder')
     .version(packageJson.version);
 
-  // add command
+  
   program
     .command('add <module>')
     .description('Add a backend module to your project')
@@ -52,9 +52,9 @@ async function main() {
       let input = module.toLowerCase().trim();
 
       try {
-        // 👉 OAuth group command
+        
         if (input === 'oauth') {
-          input = await oauthSelector(); // returns real module name
+          input = await oauthSelector(); 
         }
 
         switch (input) {
@@ -91,7 +91,7 @@ async function main() {
       }
     });
 
-  // Default help
+  
   if (!args.length) {
     program.outputHelp();
   }

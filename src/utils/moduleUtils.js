@@ -1,11 +1,11 @@
-// utils/moduleUtils.js
+
 import fs from "fs";
 import path from "path";
 import inquirer from "inquirer";
 import { ensureDir, renderTemplate } from "./filePaths.js";
 import { installDepsWithChoice } from "./packageManager.js";
 
-/* Colored logger */
+
 export const log = {
   info: (msg) => console.log(`\x1b[1m\x1b[32m${msg}\x1b[0m`),
   success: (msg) => console.log(`\x1b[32m✔ ${msg}\x1b[0m`),
@@ -15,17 +15,17 @@ export const log = {
   detect: (msg) => console.log(`\x1b[1m\x1b[34m✔ ${msg}\x1b[0m`),
 };
 
-/* 🧩 Language helpers */
+
 export const getExtension = (lang) => (lang === "TypeScript" ? "ts" : "js");
 export const getBaseDir = (targetPath, lang) =>
   lang === "TypeScript" ? path.join(targetPath, "src") : targetPath;
 
-/* 🧱 Entry file resolver */
+
 export function ensureEntryFile(targetPath, entryFile, lang) {
   let appPath = path.join(targetPath, entryFile);
   if (fs.existsSync(appPath)) return appPath;
 
-  // Try auto-detect inside src/
+  
   if (lang === "TypeScript") {
     const srcDir = path.join(targetPath, "src");
     if (fs.existsSync(srcDir)) {
@@ -41,7 +41,7 @@ export function ensureEntryFile(targetPath, entryFile, lang) {
   throw new Error(`Entry file "${entryFile}" not found.`);
 }
 
-/* 🧰 Template generator */
+
 export function createTemplates(lang, targetPath, templateDir, templates) {
   const baseDir = getBaseDir(targetPath, lang);
   const ext = getExtension(lang);
@@ -57,7 +57,7 @@ export function createTemplates(lang, targetPath, templateDir, templates) {
   log.success("Templates generated successfully.");
 }
 
-/* 🔐 Credential prompt */
+
 export async function promptEnvCredentials(fields) {
   const answers = await inquirer.prompt(fields);
   const vars = Object.fromEntries(
@@ -66,7 +66,7 @@ export async function promptEnvCredentials(fields) {
   return vars;
 }
 
-/* ⚙️ Install dependencies (runtime + dev) */
+
 export async function installDeps(
   targetPath,
   packageManager,

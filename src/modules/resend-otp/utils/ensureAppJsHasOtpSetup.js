@@ -1,11 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-/**
- * Ensures entry file (app.js / app.ts / index.ts) has OTP setup for Resend.
- * ✅ Handles both JavaScript and TypeScript.
- * ✅ Safely merges imports, middleware, and route mounting.
- */
+
 export function ensureAppJsHasOtpSetup(appPath, language = "JavaScript") {
   const isTS = language === "TypeScript";
   const ext = isTS ? ".ts" : ".js";
@@ -17,16 +13,16 @@ export function ensureAppJsHasOtpSetup(appPath, language = "JavaScript") {
 
   let content = fs.readFileSync(appPath, "utf-8");
 
-  // ✅ Imports needed for OTP setup
+  
   const requiredImports = [`import otpRoutes from './routes/otpRoutes.js'`];
 
-  // ✅ Middleware setup
+  
   const requiredMiddleware = [
     "app.use(express.json())",
     "app.use('/', otpRoutes)",
   ];
 
-  // ✅ If empty file, write from scratch
+  
   if (!content.trim()) {
     const scaffold = `
 ${requiredImports.join(";\n")};
@@ -44,14 +40,14 @@ app.listen(3000, () => {
     return;
   }
 
-  // ✅ Otherwise, safely merge setup into existing file
+  
   let lines = content.split("\n");
 
-  // Remove duplicate imports
+  
   const trimmedImports = requiredImports.map((imp) => imp.trim());
   lines = lines.filter((line) => !trimmedImports.includes(line.trim()));
 
-  // Prepend imports
+  
   lines = [...requiredImports, "", ...lines];
 
   // Ensure app initialization exists
@@ -75,7 +71,7 @@ app.listen(3000, () => {
     (line) => !mwKeywords.some((kw) => line.trim().startsWith(kw))
   );
 
-  // Insert middlewares after app = express()
+  
   lines.splice(appIndex + 1, 0, ...requiredMiddleware, "");
 
   // Add listener if missing

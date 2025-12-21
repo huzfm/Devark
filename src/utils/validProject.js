@@ -16,7 +16,7 @@ import { entryTemplates, tsConfigTemplate } from "./projectTemplates.js";
 export async function ensureNodeProject(targetPath) {
   const packageJsonPath = path.join(targetPath, "package.json");
 
-  // ✅ If project already exists
+  
   if (fs.existsSync(packageJsonPath)) {
     const pkgManager = detectPackageManager(targetPath);
     outro(" Valid project detected!");
@@ -25,7 +25,7 @@ export async function ensureNodeProject(targetPath) {
 
   log.warn("No project detected in this directory.");
 
-  // 🧭 Ask user whether to create a new one
+  
   const shouldCreate = await confirm({
     message: "Would you like to create a new project here?",
     initialValue: true,
@@ -36,7 +36,7 @@ export async function ensureNodeProject(targetPath) {
     return { success: false, pkgManager: null };
   }
 
-  // 📦 Choose package manager
+  
   const pkgManager = await select({
     message: "Choose a package manager to initialize the project:",
     options: [
@@ -53,7 +53,7 @@ export async function ensureNodeProject(targetPath) {
     return { success: false, pkgManager: null };
   }
 
-  // 🚀 Initialize project
+  
   if (pkgManager === "bun") {
     console.log(`\n🚀 Initializing project with Bun (interactive)...\n`);
     const result = spawnSync("bun", ["init"], {
@@ -84,7 +84,7 @@ export async function ensureNodeProject(targetPath) {
     }
   }
 
-  // 🧠 Choose language
+  
   const language = await select({
     message: "Which language do you want to use?",
     options: [
@@ -99,7 +99,7 @@ export async function ensureNodeProject(targetPath) {
     return { success: false, pkgManager: null };
   }
 
-  // 🧩 Entry file setup
+  
   const defaultEntry = language === "TypeScript" ? "src/app.ts" : "app.js";
   const entryFile = await text({
     message: "What do you want to name your entry file?",
@@ -116,13 +116,13 @@ export async function ensureNodeProject(targetPath) {
   const entryDir = path.dirname(entryPath);
   fs.mkdirSync(entryDir, { recursive: true });
 
-  // 📝 Write entry file
+  
   const entryContent =
     language === "TypeScript" ? entryTemplates.ts : entryTemplates.js;
   fs.writeFileSync(entryPath, entryContent, "utf8");
   log.success(`📄 Entry file created at: ${entryFile}`);
 
-  // ⚙️ TypeScript setup
+  
   if (language === "TypeScript") {
     const spinTs = spinner();
     spinTs.start("⚙️ Setting up TypeScript environment...");
@@ -151,7 +151,7 @@ export async function ensureNodeProject(targetPath) {
   return { success: true, pkgManager };
 }
 
-// 🔍 Detect existing package manager
+
 function detectPackageManager(targetPath) {
   if (fs.existsSync(path.join(targetPath, "pnpm-lock.yaml"))) return "pnpm";
   if (fs.existsSync(path.join(targetPath, "package-lock.json"))) return "npm";
