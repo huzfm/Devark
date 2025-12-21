@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 export default async function installGoogleOAuth(targetPath) {
   intro("🔐 Google OAuth Module Setup");
 
-  // 1️⃣ Ensure valid Node.js project
+  
   const { success, pkgManager } = await ensureNodeProject(targetPath);
   if (!success) {
     outro("Aborted: Not a valid  project.");
@@ -27,12 +27,12 @@ export default async function installGoogleOAuth(targetPath) {
 
   log.info("Installing Google OAuth module...");
 
-  // 2️⃣ Detect or reuse package manager
+  
   const packageManager = pkgManager || detectPackageManager(targetPath);
   if (packageManager) log.detect(` ${packageManager} detected`);
   else log.detect(" Could not detect package manager.");
 
-  // 3️⃣ Choose language
+  
   const language = await select({
     message: "Which version do you want to add for this module?",
     options: [
@@ -46,7 +46,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  // 4️⃣ Ask for entry file
+  
   const defaultEntry = language === "TypeScript" ? "src/app.ts" : "app.js";
   const entryFile = await text({
     message: "Enter your project entry file (relative to root):",
@@ -60,7 +60,7 @@ export default async function installGoogleOAuth(targetPath) {
 
   let appPath = path.join(targetPath, entryFile);
 
-  // Auto-detect TS entry file if not found
+  
   if (language === "TypeScript" && !fs.existsSync(appPath)) {
     const srcDir = path.join(targetPath, "src");
     if (fs.existsSync(srcDir)) {
@@ -78,7 +78,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  // 5️⃣ Ask for Google credentials
+  
   const clientId = await text({
     message: "Enter your Google Client ID (leave empty for sample):",
     placeholder: "your-client-id",
@@ -116,7 +116,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  // 6️⃣ Install dependencies
+  
   const runtimeDeps = [
     "express",
     "passport",
@@ -152,7 +152,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  // 7️⃣ Inject OAuth setup into entry file
+  
   try {
     ensureAppJsHasGoogleOAuthSetup(appPath, language);
   } catch (err) {
@@ -161,7 +161,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  // 8️⃣ Generate config and routes
+  
   const baseDir =
     language === "TypeScript" ? path.join(targetPath, "src") : targetPath;
 
@@ -189,7 +189,7 @@ export default async function installGoogleOAuth(targetPath) {
     )
   );
 
-  // 9️⃣ Inject .env variables
+  
   const envVars = {
     GOOGLE_CLIENT_ID: clientId || "your-client-id",
     GOOGLE_CLIENT_SECRET: clientSecret || "your-client-secret",

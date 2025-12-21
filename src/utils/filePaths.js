@@ -11,8 +11,8 @@ export function renderTemplate(srcPath, destPath, data = {}) {
   const content = ejs.render(template, data);
   const destDir = path.dirname(destPath);
   if (destDir && !fs.existsSync(destDir)) {
-    // create destination directory directly to avoid any cross-platform
-    // edge cases when using path separators
+    
+    
     fs.mkdirSync(destDir, { recursive: true });
   }
   fs.writeFileSync(destPath, content, "utf-8");

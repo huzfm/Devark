@@ -11,7 +11,7 @@ import { ensureAppJsHasOtpSetup } from "./utils/ensureAppJsHasOtpSetup.js";
 import { log } from "../../utils/moduleUtils.js";
 import { ensureNodeProject } from "../../utils/validProject.js";
 
-//    Import from Clack
+
 import { select, text, intro, outro, spinner, cancel } from "@clack/prompts";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,7 +20,7 @@ const __dirname = path.dirname(__filename);
 export default async function installOtp(targetPath) {
   log.success(" Resend OTP Module Setup");
 
-  // 1️⃣ Ensure project exists or create one
+  
   const { success, pkgManager } = await ensureNodeProject(targetPath);
   if (!success) {
     outro("Aborted: Not a valid project.");
@@ -29,7 +29,7 @@ export default async function installOtp(targetPath) {
 
   log.info("Installing Resend OTP to your project...");
 
-  // 2️⃣ Detect or reuse package manager
+  
   const packageManager = pkgManager || detectPackageManager(targetPath);
   if (packageManager) {
     log.detect(` ${packageManager} detected`);
@@ -37,7 +37,7 @@ export default async function installOtp(targetPath) {
     log.detect(" Could not detect package manager.");
   }
 
-  // 3️⃣ Ask for JS / TS
+  
   const language = await select({
     message: "Which version do you want to add for this module?",
     options: [
@@ -51,7 +51,7 @@ export default async function installOtp(targetPath) {
     return;
   }
 
-  // 4️⃣ Entry file
+  
   const defaultEntry = language === "TypeScript" ? "src/app.ts" : "app.js";
   const entryFile = await text({
     message: "Enter your project entry file (relative to root):",
@@ -65,7 +65,7 @@ export default async function installOtp(targetPath) {
 
   let appPath = path.join(targetPath, entryFile);
 
-  // Auto-detect TS entry file if missing
+  
   if (language === "TypeScript" && !fs.existsSync(appPath)) {
     const srcDir = path.join(targetPath, "src");
     if (fs.existsSync(srcDir)) {
@@ -84,7 +84,7 @@ export default async function installOtp(targetPath) {
     return;
   }
 
-  // 5️⃣ Ask for credentials
+  
   const apiKey = await text({
     message: "Enter your Resend API Key (leave empty for sample):",
     placeholder: "sample-resend-api-key",
@@ -103,7 +103,7 @@ export default async function installOtp(targetPath) {
     return;
   }
 
-  // 6️⃣ Install dependencies
+  
   const runtimeDeps = ["resend", "express", "express-rate-limit", "dotenv"];
   const devDeps =
     language === "TypeScript"
@@ -123,7 +123,7 @@ export default async function installOtp(targetPath) {
     return;
   }
 
-  // 7️⃣ Patch entry file
+  
   try {
     ensureAppJsHasOtpSetup(appPath, language);
   } catch (err) {
@@ -132,7 +132,7 @@ export default async function installOtp(targetPath) {
     return;
   }
 
-  // 8️⃣ Generate controllers/routes/middleware
+  
   const baseDir =
     language === "TypeScript" ? path.join(targetPath, "src") : targetPath;
 
@@ -172,7 +172,7 @@ export default async function installOtp(targetPath) {
     )
   );
 
-  // 9️⃣ Inject env vars
+  
   const envVars = {
     RESEND_API_KEY: apiKey || "sample-resend-api-key",
     FROM_EMAIL: fromEmail || "onboarding@resend.dev",

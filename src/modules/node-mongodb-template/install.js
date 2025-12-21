@@ -9,20 +9,20 @@ import {
 } from "../../utils/packageManager.js";
 import { log } from "../../utils/moduleUtils.js";
 
-// __dirname workaround
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function runNodeMongoGenerator(targetPath, options = {}) {
   intro("🧩 Node.js + MongoDB Project Setup");
 
-  // 🧠 Step 1: Detect if --typescript flag is provided
+  
   let isTypeScript =
     options.typescript ||
     process.argv.includes("--typescript") ||
     process.argv.includes("--ts");
 
-  // ❓ Step 2: Prompt only if no flag provided
+  
   if (!isTypeScript) {
     const language = await select({
       message: "Which language do you want to use?",
@@ -47,25 +47,25 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     }`
   );
 
-  // 🔍 Step 3: Detect package manager
+  
   const packageManager = detectByCommand();
   log.detect(`Using ${packageManager} as package manager`);
 
-  // 🧩 Step 4: Define target source path
+  
   const srcPath = isTypeScript ? path.join(targetPath, "src") : targetPath;
 
-  // 📁 Step 5: Ensure required folders exist
+  
   const folders = ["models", "routes", "controllers"];
   folders.forEach((folder) => ensureDir(path.join(srcPath, folder)));
 
-  // 📄 Step 6: Define templates directory based on language
+  
   const templatesDir = path.join(
     __dirname,
     "templates",
     isTypeScript ? "typescript" : "javascript"
   );
 
-  // ⚙️ Step 7: Generate main files
+  
   renderTemplate(
     path.join(templatesDir, isTypeScript ? "app.ts.ejs" : "app.ejs"),
     path.join(srcPath, isTypeScript ? "app.ts" : "app.js"),
@@ -89,7 +89,7 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     { isTypeScript }
   );
 
-  // 🧩 Step 8: MVC structure
+  
   renderTemplate(
     path.join(
       templatesDir,
@@ -132,14 +132,14 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     {}
   );
 
-  // 📝 Step 9: Add Instructions
+  
   renderTemplate(
     path.join(templatesDir, "Instructions.ejs"),
     path.join(targetPath, "Instructions.md"),
     {}
   );
 
-  // ⚙️ Step 10: Render tsconfig.json (only for TS)
+  
   if (isTypeScript) {
     renderTemplate(
       path.join(templatesDir, "tsconfig.json.ejs"),
@@ -148,7 +148,7 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     );
   }
 
-  // 📦 Step 11: Install dependencies
+  
   const deps = ["express", "mongoose", "morgan", "dotenv", "helmet", "cors"];
   const devDeps = isTypeScript
     ? [
@@ -163,7 +163,7 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     : ["nodemon"];
 
   try {
-    // Install main dependencies
+    
     log.info(` Installing dependencies using ${packageManager}...`);
     await installDepsWithChoice(targetPath, deps, packageManager);
     await installDepsWithChoice(targetPath, devDeps, packageManager, true);

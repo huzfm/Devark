@@ -30,21 +30,21 @@ export function injectEnvVars(targetPath, vars) {
     .map(([k, v]) => `${k}=${v}`)
     .join("\n");
 
-  // Write atomically: write to tmp file then rename.
+  
   const tmpPath = envPath + ".tmp";
   try {
     fs.writeFileSync(tmpPath, content, "utf-8");
-    // Try to flush to disk (best-effort)
+    
     try {
       const fd = fs.openSync(tmpPath, "r");
       fs.fsyncSync(fd);
       fs.closeSync(fd);
     } catch (err) {
-      // ignore fsync errors on environments that don't support it
+      
     }
     fs.renameSync(tmpPath, envPath);
   } catch (err) {
-    // Fallback: attempt direct write
+    
     fs.writeFileSync(envPath, content, "utf-8");
   }
 }

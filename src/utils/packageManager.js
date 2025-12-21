@@ -3,15 +3,13 @@ import path from "path";
 import { execSync } from "child_process";
 import { log } from "./moduleUtils.js";
 
-/**
- * Detect package manager by lockfiles in project
- */
+
 export function detectPackageManager(targetPath) {
   const lockFiles = {
     pnpm: ["pnpm-lock.yaml"],
     yarn: ["yarn.lock"],
     npm: ["package-lock.json"],
-    bun: ["bun.lock", "bun.lockb"], // support both Bun versions
+    bun: ["bun.lock", "bun.lockb"], 
   };
 
   for (const [manager, files] of Object.entries(lockFiles)) {
@@ -22,9 +20,7 @@ export function detectPackageManager(targetPath) {
   return null;
 }
 
-/**
- * Install dependencies using detected package manager
- */
+
 export function installDependencies(targetPath, dependencies) {
   const packageManager = detectPackageManager(targetPath);
   if (!packageManager) {
@@ -46,9 +42,7 @@ export function installDependencies(targetPath, dependencies) {
   execSync(commands[packageManager], { cwd: targetPath, stdio: "inherit" });
 }
 
-/**
- * Validate if targetPath is a Node.js project
- */
+
 export function isValidNodeProject(targetPath) {
   const pkgPath = path.join(targetPath, "package.json");
   if (!fs.existsSync(pkgPath)) return false;
@@ -60,9 +54,7 @@ export function isValidNodeProject(targetPath) {
   }
 }
 
-/**
- * Install dependencies using a specific package manager (no prompt)
- */
+
 export async function installDepsWithChoice(
   targetPath,
   dependencies,
@@ -83,9 +75,7 @@ export async function installDepsWithChoice(
   return true;
 }
 
-/**
- * Detect package manager from CLI / user agent
- */
+
 export function detectByCommand() {
   const ua = process.env.npm_config_user_agent || "";
   if (ua.startsWith("yarn")) return "yarn";
