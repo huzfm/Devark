@@ -16,9 +16,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function installGoogleOAuth(targetPath) {
-  intro("🔐 Google OAuth Module Setup");
+  intro("Google OAuth Module Setup");
 
-  
+
   const { success, pkgManager } = await ensureNodeProject(targetPath);
   if (!success) {
     outro("Aborted: Not a valid  project.");
@@ -27,12 +27,12 @@ export default async function installGoogleOAuth(targetPath) {
 
   log.info("Installing Google OAuth module...");
 
-  
+
   const packageManager = pkgManager || detectPackageManager(targetPath);
   if (packageManager) log.detect(` ${packageManager} detected`);
   else log.detect(" Could not detect package manager.");
 
-  
+
   const language = await select({
     message: "Which version do you want to add for this module?",
     options: [
@@ -46,7 +46,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  
+
   const defaultEntry = language === "TypeScript" ? "src/app.ts" : "app.js";
   const entryFile = await text({
     message: "Enter your project entry file (relative to root):",
@@ -60,7 +60,7 @@ export default async function installGoogleOAuth(targetPath) {
 
   let appPath = path.join(targetPath, entryFile);
 
-  
+
   if (language === "TypeScript" && !fs.existsSync(appPath)) {
     const srcDir = path.join(targetPath, "src");
     if (fs.existsSync(srcDir)) {
@@ -78,7 +78,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  
+
   const clientId = await text({
     message: "Enter your Google Client ID (leave empty for sample):",
     placeholder: "your-client-id",
@@ -116,7 +116,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  
+
   const runtimeDeps = [
     "express",
     "passport",
@@ -128,14 +128,14 @@ export default async function installGoogleOAuth(targetPath) {
   const devDeps =
     language === "TypeScript"
       ? [
-          "typescript",
-          "ts-node",
-          "@types/node",
-          "@types/express",
-          "@types/express-session",
-          "@types/passport",
-          "@types/passport-google-oauth20",
-        ]
+        "typescript",
+        "ts-node",
+        "@types/node",
+        "@types/express",
+        "@types/express-session",
+        "@types/passport",
+        "@types/passport-google-oauth20",
+      ]
       : [];
 
   const spin = spinner();
@@ -152,7 +152,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  
+
   try {
     ensureAppJsHasGoogleOAuthSetup(appPath, language);
   } catch (err) {
@@ -161,7 +161,7 @@ export default async function installGoogleOAuth(targetPath) {
     return;
   }
 
-  
+
   const baseDir =
     language === "TypeScript" ? path.join(targetPath, "src") : targetPath;
 
@@ -189,7 +189,7 @@ export default async function installGoogleOAuth(targetPath) {
     )
   );
 
-  
+
   const envVars = {
     GOOGLE_CLIENT_ID: clientId || "your-client-id",
     GOOGLE_CLIENT_SECRET: clientSecret || "your-client-secret",
