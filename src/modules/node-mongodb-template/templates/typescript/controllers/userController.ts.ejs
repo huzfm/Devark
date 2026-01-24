@@ -154,7 +154,7 @@ export const getUsers = async (_req: Request, res: Response): Promise<void> => {
                                     error: unknown,
                                     message: string
                                     ): void => {
-                                    console.error(`❌ ${message}:`, error);
+                                    console.error(`  ${message}:`, error);
                                     res.status(500).json({
                                     success: false,
                                     message,

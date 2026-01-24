@@ -50,7 +50,7 @@ const otpStore: Map<string, OtpEntry> = new Map();
             console.log(`✅ OTP sent to ${email}: ${otp}`);
             return true;
             } catch (err) {
-            console.error("❌ Failed to send OTP:", err);
+            console.error("  Failed to send OTP:", err);
             return false;
             }
             }

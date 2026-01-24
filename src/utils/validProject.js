@@ -16,7 +16,7 @@ import { entryTemplates, tsConfigTemplate } from "./projectTemplates.js";
 export async function ensureNodeProject(targetPath) {
   const packageJsonPath = path.join(targetPath, "package.json");
 
-  
+
   if (fs.existsSync(packageJsonPath)) {
     const pkgManager = detectPackageManager(targetPath);
     outro(" Valid project detected!");
@@ -25,7 +25,7 @@ export async function ensureNodeProject(targetPath) {
 
   log.warn("No project detected in this directory.");
 
-  
+
   const shouldCreate = await confirm({
     message: "Would you like to create a new project here?",
     initialValue: true,
@@ -36,7 +36,7 @@ export async function ensureNodeProject(targetPath) {
     return { success: false, pkgManager: null };
   }
 
-  
+
   const pkgManager = await select({
     message: "Choose a package manager to initialize the project:",
     options: [
@@ -49,23 +49,23 @@ export async function ensureNodeProject(targetPath) {
   });
 
   if (pkgManager === cancel) {
-    outro("❌ Cancelled by user.");
+    outro("Cancelled by user.");
     return { success: false, pkgManager: null };
   }
 
-  
+
   if (pkgManager === "bun") {
-    console.log(`\n🚀 Initializing project with Bun (interactive)...\n`);
+    console.log(`\n Initializing project with Bun (interactive)...\n`);
     const result = spawnSync("bun", ["init"], {
       cwd: targetPath,
       stdio: "inherit",
     });
     if (result.error) {
-      log.error("❌ Failed to initialize Bun project.");
+      log.error("Failed to initialize Bun project.");
       log.error(result.error.message);
       return { success: false, pkgManager: null };
     }
-    log.success("✅ Project initialized successfully!");
+    log.success("Project initialized successfully!");
   } else {
     const spin = spinner();
     try {
@@ -76,15 +76,15 @@ export async function ensureNodeProject(targetPath) {
         yarn: "yarn init",
       };
       execSync(initCommands[pkgManager], { cwd: targetPath, stdio: "ignore" });
-      spin.stop("✅ Project initialized successfully!");
+      spin.stop("Project initialized successfully!");
     } catch (error) {
-      spin.stop("❌ Failed to initialize the project.");
+      spin.stop(" Failed to initialize the project.");
       log.error(error.message);
       return { success: false, pkgManager: null };
     }
   }
 
-  
+
   const language = await select({
     message: "Which language do you want to use?",
     options: [
@@ -95,11 +95,11 @@ export async function ensureNodeProject(targetPath) {
   });
 
   if (language === cancel) {
-    outro("❌ Cancelled by user.");
+    outro("Cancelled by user.");
     return { success: false, pkgManager: null };
   }
 
-  
+
   const defaultEntry = language === "TypeScript" ? "src/app.ts" : "app.js";
   const entryFile = await text({
     message: "What do you want to name your entry file?",
@@ -108,7 +108,7 @@ export async function ensureNodeProject(targetPath) {
   });
 
   if (entryFile === cancel || !entryFile) {
-    outro("❌ Cancelled by user.");
+    outro("Cancelled by user.");
     return { success: false, pkgManager: null };
   }
 
@@ -116,16 +116,16 @@ export async function ensureNodeProject(targetPath) {
   const entryDir = path.dirname(entryPath);
   fs.mkdirSync(entryDir, { recursive: true });
 
-  
+
   const entryContent =
     language === "TypeScript" ? entryTemplates.ts : entryTemplates.js;
   fs.writeFileSync(entryPath, entryContent, "utf8");
-  log.success(`📄 Entry file created at: ${entryFile}`);
+  log.success(` Entry file created at: ${entryFile}`);
 
-  
+
   if (language === "TypeScript") {
     const spinTs = spinner();
-    spinTs.start("⚙️ Setting up TypeScript environment...");
+    spinTs.start("Setting up TypeScript environment...");
     try {
       execSync(
         `${pkgManager} add -D typescript ts-node @types/node @types/express`,
@@ -138,16 +138,16 @@ export async function ensureNodeProject(targetPath) {
           tsconfigPath,
           JSON.stringify(tsConfigTemplate, null, 2)
         );
-        log.info("📝 tsconfig.json created!");
+        log.info("tsconfig.json created!");
       }
-      spinTs.stop("✅ TypeScript environment setup complete!");
+      spinTs.stop("TypeScript environment setup complete!");
     } catch (err) {
-      spinTs.stop("❌ Failed to set up TypeScript.");
+      spinTs.stop("Failed to set up TypeScript.");
       log.error(err.message);
     }
   }
 
-  outro("🎉 Project setup complete!");
+  outro("Project setup complete!");
   return { success: true, pkgManager };
 }
 

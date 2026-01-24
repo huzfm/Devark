@@ -27,14 +27,14 @@ const program = new Command();
 
 
 process.on('SIGINT', () => {
-  console.log('❌ Installation aborted.');
+  console.log('  Installation aborted.');
   process.exit(0);
 });
 
 async function main() {
   const args = process.argv.slice(2);
 
-  
+
   if (!(args.length && args[0] === '--version')) {
     await showDevarkLogo();
   }
@@ -44,7 +44,7 @@ async function main() {
     .description('Devark CLI - Modular backend scaffolder')
     .version(packageJson.version);
 
-  
+
   program
     .command('add <module>')
     .description('Add a backend module to your project')
@@ -52,9 +52,9 @@ async function main() {
       let input = module.toLowerCase().trim();
 
       try {
-        
+
         if (input === 'oauth') {
-          input = await oauthSelector(); 
+          input = await oauthSelector();
         }
 
         switch (input) {
@@ -83,15 +83,15 @@ async function main() {
         }
       } catch (err) {
         if (err.isTtyError || err.message?.includes('force closed')) {
-          console.log('\n❌ Installation aborted.');
+          console.log('\n  Installation aborted.');
         } else {
-          console.error('❌ Error:', err.message);
+          console.error('  Error:', err.message);
         }
         process.exit(1);
       }
     });
 
-  
+
   if (!args.length) {
     program.outputHelp();
   }

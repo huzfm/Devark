@@ -28,7 +28,7 @@ mongoose
 .connect(MONGO_URI)
 .then(() => console.log(" Connected to MongoDB"))
 .catch((error: Error) => {
-console.error("❌ MongoDB connection error:", error.message);
+console.error("  MongoDB connection error:", error.message);
 process.exit(1);
 });
 
@@ -47,7 +47,7 @@ app.use("/api/users", userRoutes);
 
 // ===== GLOBAL ERROR HANDLER =====
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-console.error("❌ Unhandled Error:", err);
+console.error("  Unhandled Error:", err);
 res.status(500).json({
 success: false,
 message: "Internal server error",

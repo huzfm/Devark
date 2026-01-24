@@ -26,7 +26,7 @@ export async function sendOtpHandler(req: Request, res: Response): Promise<Respo
       });
       }
       } catch (err) {
-      console.error("❌ Error sending OTP:", err);
+      console.error("  Error sending OTP:", err);
       return res.status(500).json({
       success: false,
       message: "Internal server error.",
@@ -59,7 +59,7 @@ export async function sendOtpHandler(req: Request, res: Response): Promise<Respo
       });
       }
       } catch (err) {
-      console.error("❌ Error verifying OTP:", err);
+      console.error("  Error verifying OTP:", err);
       return res.status(500).json({
       success: false,
       message: "Internal server error.",

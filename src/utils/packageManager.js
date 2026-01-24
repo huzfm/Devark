@@ -9,7 +9,7 @@ export function detectPackageManager(targetPath) {
     pnpm: ["pnpm-lock.yaml"],
     yarn: ["yarn.lock"],
     npm: ["package-lock.json"],
-    bun: ["bun.lock", "bun.lockb"], 
+    bun: ["bun.lock", "bun.lockb"],
   };
 
   for (const [manager, files] of Object.entries(lockFiles)) {
@@ -24,7 +24,7 @@ export function detectPackageManager(targetPath) {
 export function installDependencies(targetPath, dependencies) {
   const packageManager = detectPackageManager(targetPath);
   if (!packageManager) {
-    console.error("❌ Could not detect package manager. Install manually:");
+    console.error("  Could not detect package manager. Install manually:");
     console.log(`   npm install ${dependencies.join(" ")}`);
     return;
   }

@@ -28,7 +28,7 @@ message: "User created successfully",
 data: user,
 });
 } catch (err) {
-console.error("❌ Create User Error:", err);
+console.error("  Create User Error:", err);
 res
 .status(500)
 .json({ success: false, message: "Server error", error: err.message });
@@ -40,7 +40,7 @@ try {
 const users = await User.find().sort({ createdAt: -1 });
 res.status(200).json({ success: true, count: users.length, data: users });
 } catch (err) {
-console.error("❌ Get Users Error:", err);
+console.error("  Get Users Error:", err);
 res
 .status(500)
 .json({ success: false, message: "Server error", error: err.message });
@@ -57,7 +57,7 @@ return res
 }
 res.status(200).json({ success: true, data: user });
 } catch (err) {
-console.error("❌ Get User Error:", err);
+console.error("  Get User Error:", err);
 res
 .status(500)
 .json({ success: false, message: "Server error", error: err.message });
@@ -86,7 +86,7 @@ message: "User updated successfully",
 data: updatedUser,
 });
 } catch (err) {
-console.error("❌ Update User Error:", err);
+console.error("  Update User Error:", err);
 res
 .status(500)
 .json({ success: false, message: "Server error", error: err.message });
@@ -109,7 +109,7 @@ message: "User deleted successfully",
 data: deletedUser,
 });
 } catch (err) {
-console.error("❌ Delete User Error:", err);
+console.error("  Delete User Error:", err);
 res
 .status(500)
 .json({ success: false, message: "Server error", error: err.message });

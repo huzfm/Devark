@@ -31,7 +31,7 @@ res.send(`
 `);
 } else {
 res.send(`
-<h1>❌ Login Failed</h1>
+<h1>  Login Failed</h1>
 <p>No user data found.</p>
 <p><a href="/">Try again</a></p>
 `);
@@ -40,7 +40,7 @@ res.send(`
 
 // 🔹 Step 4: Failure route
 router.get("/auth/failure", (req, res) => {
-res.send("❌ Failed to authenticate..");
+res.send("  Failed to authenticate..");
 });
 
 export default router;
