@@ -10,7 +10,7 @@ export function ensureAppJsHasGithubOAuthSetup(
   const ext = isTS ? ".ts" : ".js";
 
   if (!fs.existsSync(appPath)) {
-    console.warn(`⚠️ File not found: ${appPath}. Aborting update.`);
+    console.warn(`File not found: ${appPath}. Aborting update.`);
     return;
   }
 

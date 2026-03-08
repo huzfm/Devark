@@ -28,7 +28,7 @@ const user = req.user as IUser | undefined;
 
 if (user) {
 res.send(`
-<h1>Logged In Successfully ✅</h1>
+<h1>Logged In Successfully </h1>
 <p>Welcome, ${user.displayName}!</p>
 <p>Email: ${user.emails?.[0]?.value || "N/A"}</p>
 <p><a href="/">Go back home</a></p>

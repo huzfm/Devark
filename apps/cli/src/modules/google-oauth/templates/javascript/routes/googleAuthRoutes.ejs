@@ -14,7 +14,7 @@ router.get(
 "/auth/google/callback",
 passport.authenticate("google", {
 failureRedirect: "/auth/failure",
-successRedirect: "/success", // ✅ redirect to success page
+successRedirect: "/success", //  redirect to success page
 })
 );
 
@@ -24,7 +24,7 @@ const user = req.user;
 
 if (user) {
 res.send(`
-<h1>✅ Logged In Successfully</h1>
+<h1> Logged In Successfully</h1>
 <p>Welcome, ${user.displayName}!</p>
 <p>Email: ${user.emails?.[0]?.value || "N/A"}</p>
 <p><a href="/">Go back home</a></p>

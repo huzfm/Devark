@@ -16,17 +16,22 @@ jobs:
       # -----------------------------
       # Step 1: Checkout base branch
       # -----------------------------
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Checkout base branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
 
       - name: Install dependencies (base)
-        run: npm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Capture base CLI help
         run: |
-          node ./src/bin/devark.js --help > base-help.txt
+          node ./apps/cli/src/bin/devark.js --help > base-help.txt
 
       # -----------------------------
       # Step 2: Checkout PR branch
@@ -35,11 +40,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies (PR)
-        run: npm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Capture PR CLI help
         run: |
-          node ./src/bin/devark.js --help > pr-help.txt
+          node ./apps/cli/src/bin/devark.js --help > pr-help.txt
 
       # -----------------------------
       # Step 3: Compare outputs
@@ -67,7 +72,7 @@ jobs:
             }
 
             const body = `
-            ⚠️ **Potential CLI Breaking Change Detected**
+             **Potential CLI Breaking Change Detected**
 
             The CLI help output has changed in this PR.
             This may indicate a breaking change for existing users.

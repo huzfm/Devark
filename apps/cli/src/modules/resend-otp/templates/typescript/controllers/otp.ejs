@@ -47,7 +47,7 @@ const otpStore: Map<string, OtpEntry> = new Map();
             html: htmlContent,
             });
 
-            console.log(`✅ OTP sent to ${email}: ${otp}`);
+            console.log(` OTP sent to ${email}: ${otp}`);
             return true;
             } catch (err) {
             console.error("  Failed to send OTP:", err);
