@@ -17,7 +17,7 @@ export default async function runNodePostgresGenerator(
   targetPath,
   options = {}
 ) {
-  intro("🧩 Node.js + PostgreSQL + Prisma Project Setup");
+  intro(" Node.js + PostgreSQL + Prisma Project Setup");
 
   
   let isTypeScript =

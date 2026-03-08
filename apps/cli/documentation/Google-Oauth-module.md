@@ -6,7 +6,7 @@ This document explains how the `devark` CLI integrates **Google OAuth** into you
 
 ---
 
-## 🚀 CLI Command Example
+##  CLI Command Example
 
 ```
 npx devark add google-oauth

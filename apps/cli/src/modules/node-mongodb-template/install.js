@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function runNodeMongoGenerator(targetPath, options = {}) {
-  intro("🧩 Node.js + MongoDB Project Setup");
+  intro(" Node.js + MongoDB Project Setup");
 
   
   let isTypeScript =

@@ -6,7 +6,7 @@ This document explains how the `devark` CLI integrates **GitHub OAuth** into you
 
 ---
 
-## 🚀 CLI Command Example
+##  CLI Command Example
 
 ```bash
 npx devark add github-oauth
