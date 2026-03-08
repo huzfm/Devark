@@ -9,7 +9,6 @@ import {
 } from "../../utils/packageManager.js";
 import { log } from "../../utils/moduleUtils.js";
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -19,13 +18,11 @@ export default async function runNodePostgresGenerator(
 ) {
   intro(" Node.js + PostgreSQL + Prisma Project Setup");
 
-  
   let isTypeScript =
     options.typescript ||
     process.argv.includes("--typescript") ||
     process.argv.includes("--ts");
 
-  
   if (!isTypeScript) {
     const language = await select({
       message: "Which language do you want to use?",
@@ -50,18 +47,9 @@ export default async function runNodePostgresGenerator(
     }`
   );
 
-  
   const packageManager = detectByCommand();
   log.detect(`Using ${packageManager} as package manager`);
 
-  
-  const srcPath = isTypeScript ? path.join(targetPath, "src") : targetPath;
-
-  
-  const folders = ["prisma", "routes", "controllers", "utils"];
-  folders.forEach((folder) => ensureDir(path.join(srcPath, folder)));
-
-  
   const templatesDir = path.join(
     __dirname,
     "templates",
@@ -69,18 +57,13 @@ export default async function runNodePostgresGenerator(
   );
 
   const ext = isTypeScript ? "ts" : "js";
+  const srcPath = isTypeScript ? path.join(targetPath, "src") : targetPath;
 
-  
-  renderTemplate(
-    path.join(templatesDir, isTypeScript ? "app.ts.ejs" : "app.ejs"),
-    path.join(srcPath, `app.${ext}`),
-    {}
-  );
 
   renderTemplate(
-    path.join(templatesDir, "env.example.ejs"),
-    path.join(targetPath, ".env.example"),
-    {}
+    path.join(templatesDir, "package.json.ejs"),
+    path.join(targetPath, "package.json"),
+    { isTypeScript }
   );
 
   renderTemplate(
@@ -90,45 +73,11 @@ export default async function runNodePostgresGenerator(
   );
 
   renderTemplate(
-    path.join(templatesDir, "package.json.ejs"),
-    path.join(targetPath, "package.json"),
-    { isTypeScript }
-  );
-
-  
-  renderTemplate(
-    path.join(templatesDir, "schema.prisma.ejs"),
-    path.join(targetPath, "prisma/schema.prisma"),
+    path.join(templatesDir, "env.example.ejs"),
+    path.join(targetPath, ".env.example"),
     {}
   );
 
-  renderTemplate(
-    path.join(templatesDir, "utils", "prismaClient.ejs"),
-    path.join(srcPath, `utils/prismaClient.${ext}`),
-    {}
-  );
-
-  
-  renderTemplate(
-    path.join(templatesDir, "routes", `userRoutes.ejs`),
-    path.join(srcPath, `routes/userRoutes.${ext}`),
-    {}
-  );
-
-  renderTemplate(
-    path.join(templatesDir, "controllers", `userController.ejs`),
-    path.join(srcPath, `controllers/userController.${ext}`),
-    {}
-  );
-
-  
-  renderTemplate(
-    path.join(templatesDir, "Instructions.ejs"),
-    path.join(targetPath, "Instructions.md"),
-    {}
-  );
-
-  
   if (isTypeScript) {
     renderTemplate(
       path.join(templatesDir, "tsconfig.json.ejs"),
@@ -137,7 +86,7 @@ export default async function runNodePostgresGenerator(
     );
   }
 
-  
+
   const deps = ["express", "@prisma/client", "dotenv", "morgan"];
   const devDeps = ["prisma", "nodemon"];
 
@@ -153,17 +102,67 @@ export default async function runNodePostgresGenerator(
 
   try {
     log.info(` Installing dependencies using ${packageManager}...`);
+
     await installDepsWithChoice(targetPath, deps, packageManager);
     await installDepsWithChoice(targetPath, devDeps, packageManager, true);
+
+    log.success("Dependencies installed successfully");
   } catch (error) {
     log.error("Failed to install dependencies:", error);
     return;
   }
 
-  outro(
-    `Node.js + PostgreSQL + Prisma ${isTypeScript ? "TypeScript" : "JavaScript"}`
+
+  const folders = ["prisma", "routes", "controllers", "utils"];
+  folders.forEach((folder) => ensureDir(path.join(srcPath, folder)));
+
+  ensureDir(path.join(targetPath, "prisma"));
+
+
+  renderTemplate(
+    path.join(templatesDir, isTypeScript ? "app.ts.ejs" : "app.ejs"),
+    path.join(srcPath, `app.${ext}`),
+    {}
   );
-  outro("project setup completed.");
+
+  renderTemplate(
+    path.join(templatesDir, "schema.prisma.ejs"),
+    path.join(targetPath, "prisma/schema.prisma"),
+    {}
+  );
+
+  renderTemplate(
+    path.join(templatesDir, "utils", "prismaClient.ejs"),
+    path.join(srcPath, `utils/prismaClient.${ext}`),
+    {}
+  );
+
+  renderTemplate(
+    path.join(templatesDir, "routes", "userRoutes.ejs"),
+    path.join(srcPath, `routes/userRoutes.${ext}`),
+    {}
+  );
+
+  renderTemplate(
+    path.join(templatesDir, "controllers", "userController.ejs"),
+    path.join(srcPath, `controllers/userController.${ext}`),
+    {}
+  );
+
+  renderTemplate(
+    path.join(templatesDir, "Instructions.ejs"),
+    path.join(targetPath, "Instructions.md"),
+    {}
+  );
+
+
+  outro(
+    `Node.js + PostgreSQL + Prisma ${
+      isTypeScript ? "TypeScript" : "JavaScript"
+    }`
+  );
+
+  outro("Project setup completed.");
   outro(
     "Please read the Instructions.md file for help on how to run and use your project."
   );
