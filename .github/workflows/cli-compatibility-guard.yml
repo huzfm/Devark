@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: base/pnpm-lock.yaml
 
       # Step 1: Checkout base branch
 
