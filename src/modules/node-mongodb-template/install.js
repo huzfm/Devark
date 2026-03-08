@@ -9,20 +9,17 @@ import {
 } from "../../utils/packageManager.js";
 import { log } from "../../utils/moduleUtils.js";
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function runNodeMongoGenerator(targetPath, options = {}) {
   intro(" Node.js + MongoDB Project Setup");
 
-  
   let isTypeScript =
     options.typescript ||
     process.argv.includes("--typescript") ||
     process.argv.includes("--ts");
 
-  
   if (!isTypeScript) {
     const language = await select({
       message: "Which language do you want to use?",
@@ -47,28 +44,27 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     }`
   );
 
-  
   const packageManager = detectByCommand();
   log.detect(`Using ${packageManager} as package manager`);
 
-  
-  const srcPath = isTypeScript ? path.join(targetPath, "src") : targetPath;
-
-  
-  const folders = ["models", "routes", "controllers"];
-  folders.forEach((folder) => ensureDir(path.join(srcPath, folder)));
-
-  
   const templatesDir = path.join(
     __dirname,
     "templates",
     isTypeScript ? "typescript" : "javascript"
   );
 
-  
+  const srcPath = isTypeScript ? path.join(targetPath, "src") : targetPath;
+
+
   renderTemplate(
-    path.join(templatesDir, isTypeScript ? "app.ts.ejs" : "app.ejs"),
-    path.join(srcPath, isTypeScript ? "app.ts" : "app.js"),
+    path.join(templatesDir, "package.json.ejs"),
+    path.join(targetPath, "package.json"),
+    { isTypeScript }
+  );
+
+  renderTemplate(
+    path.join(templatesDir, "gitignore.ejs"),
+    path.join(targetPath, ".gitignore"),
     {}
   );
 
@@ -77,19 +73,48 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     path.join(targetPath, ".env.example"),
     {}
   );
+
+
+
+  const deps = ["express", "mongoose", "morgan", "dotenv", "helmet", "cors"];
+
+  const devDeps = isTypeScript
+    ? [
+        "typescript",
+        "@types/node",
+        "@types/express",
+        "@types/cors",
+        "@types/morgan",
+        "ts-node",
+        "nodemon",
+      ]
+    : ["nodemon"];
+
+  try {
+    log.info(` Installing dependencies using ${packageManager}...`);
+
+    await installDepsWithChoice(targetPath, deps, packageManager);
+    await installDepsWithChoice(targetPath, devDeps, packageManager, true);
+
+    log.success("Dependencies installed successfully");
+  } catch (error) {
+    log.error("Failed to install dependencies:", error);
+    return;
+  }
+
+
+
+  const folders = ["models", "routes", "controllers"];
+  folders.forEach((folder) => ensureDir(path.join(srcPath, folder)));
+
+
+
   renderTemplate(
-    path.join(templatesDir, "gitignore.ejs"),
-    path.join(targetPath, ".gitignore"),
+    path.join(templatesDir, isTypeScript ? "app.ts.ejs" : "app.ejs"),
+    path.join(srcPath, isTypeScript ? "app.ts" : "app.js"),
     {}
   );
 
-  renderTemplate(
-    path.join(templatesDir, "package.json.ejs"),
-    path.join(targetPath, "package.json"),
-    { isTypeScript }
-  );
-
-  
   renderTemplate(
     path.join(
       templatesDir,
@@ -132,14 +157,12 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     {}
   );
 
-  
   renderTemplate(
     path.join(templatesDir, "Instructions.ejs"),
     path.join(targetPath, "Instructions.md"),
     {}
   );
 
-  
   if (isTypeScript) {
     renderTemplate(
       path.join(templatesDir, "tsconfig.json.ejs"),
@@ -148,33 +171,8 @@ export default async function runNodeMongoGenerator(targetPath, options = {}) {
     );
   }
 
-  
-  const deps = ["express", "mongoose", "morgan", "dotenv", "helmet", "cors"];
-  const devDeps = isTypeScript
-    ? [
-        "typescript",
-        "@types/node",
-        "@types/express",
-        "@types/cors",
-        "@types/morgan",
-        "ts-node",
-        "nodemon",
-      ]
-    : ["nodemon"];
-
-  try {
-    
-    log.info(` Installing dependencies using ${packageManager}...`);
-    await installDepsWithChoice(targetPath, deps, packageManager);
-    await installDepsWithChoice(targetPath, devDeps, packageManager, true);
-  } catch (error) {
-    log.error("Failed to install dependencies:", error);
-    return;
-  }
-
   outro(`Node.js + MongoDB ${isTypeScript ? "TypeScript" : "JavaScript"}`);
-
-  outro("project setup completed.");
+  outro("Project setup completed.");
   outro(
     "Please read the Instructions.md file for help on how to run and use your project"
   );
