@@ -1,0 +1,46 @@
+import express from "express";
+import passport from "passport";
+
+const router = express.Router();
+
+// 🔹 Step 1: Start Google login
+router.get(
+"/auth/google",
+passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+// 🔹 Step 2: Google OAuth callback
+router.get(
+"/auth/google/callback",
+passport.authenticate("google", {
+failureRedirect: "/auth/failure",
+successRedirect: "/success", //  redirect to success page
+})
+);
+
+// 🔹 Step 3: Success page (after login)
+router.get("/success", (req, res) => {
+const user = req.user;
+
+if (user) {
+res.send(`
+<h1> Logged In Successfully</h1>
+<p>Welcome, ${user.displayName}!</p>
+<p>Email: ${user.emails?.[0]?.value || "N/A"}</p>
+<p><a href="/">Go back home</a></p>
+`);
+} else {
+res.send(`
+<h1>  Login Failed</h1>
+<p>No user data found.</p>
+<p><a href="/">Try again</a></p>
+`);
+}
+});
+
+// 🔹 Step 4: Failure route
+router.get("/auth/failure", (req, res) => {
+res.send("  Failed to authenticate..");
+});
+
+export default router;

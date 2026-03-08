@@ -136,7 +136,7 @@ modules/
 
 ---
 
-## ✅ Requirements
+##  Requirements
 
 - Node.js v18+
 - A Google Cloud Project with **OAuth 2.0 credentials**

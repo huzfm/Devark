@@ -138,7 +138,7 @@ modules/
 
 ---
 
-## ✅ Requirements
+##  Requirements
 
 - Node.js v18+
 - A GitHub OAuth App (created in **GitHub Developer Settings**)

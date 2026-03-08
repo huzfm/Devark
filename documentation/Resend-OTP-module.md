@@ -10,7 +10,7 @@ Easily scaffold **OTP email verification** in an Express.js backend using the **
 
 ---
 
-## ✅ Example Command
+##  Example Command
 
 ```bash
 npx devark add resend-otp
@@ -116,7 +116,7 @@ FROM_EMAIL=admin@example.com
    → Responds with **success** or **failure**
 
 **Key Point:**  
-✅ No OTP is stored on the server — fully stateless and secure.
+ No OTP is stored on the server — fully stateless and secure.
 
 ---
 
@@ -177,7 +177,7 @@ To add another module in Devark:
 
 ---
 
-## ✅ Requirements
+##  Requirements
 
 - Node.js **18+**
 - A project with:
