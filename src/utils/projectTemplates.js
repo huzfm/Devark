@@ -8,7 +8,7 @@ app.get("/", (req, res) => {
   res.send(" Welcome to your new Devark app!");
 });
 
-app.listen(3000, () => console.log("✅ Server running on port 3000"));
+app.listen(3000, () => console.log("Server running on port 3000"));
 `,
 
   ts: `import express, { Request, Response, Application } from "express";
@@ -21,7 +21,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(\`✅ Server running on port \${PORT}\`));
+app.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));
 `,
 };
 

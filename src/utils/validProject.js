@@ -32,7 +32,7 @@ export async function ensureNodeProject(targetPath) {
   });
 
   if (shouldCreate === cancel || !shouldCreate) {
-    outro("❌ Aborting module installation.");
+    outro("Aborting module installation.");
     return { success: false, pkgManager: null };
   }
 
